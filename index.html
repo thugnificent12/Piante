@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Le mie piante</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F6B4F">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#F6F4EC;color:#1F2A22;-webkit-text-size-adjust:100%}
+#app{max-width:480px;margin:0 auto;padding:20px 16px 40px;display:flex;flex-direction:column;gap:14px;min-height:100vh}
+h1{margin:0;font-size:28px}h2{margin:6px 0 0;font-size:17px}
+a{color:#2F6B4F}
+button,input,select{font:inherit}
+.sub{color:#5B6358;font-size:14px}
+.row{display:flex;align-items:center;gap:12px}
+.card{background:#fff;border-radius:16px;padding:12px 14px}
+.lbl{font-size:12px;font-weight:600;letter-spacing:.05em;color:#5B6358;text-transform:uppercase}
+.val{font-size:15px;line-height:1.35}
+.wx{background:#E3EEF5;border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:3px}
+.wx .lbl{color:#3F5566}
+.todo{background:#2F6B4F;color:#fff;border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.todo .lbl{color:#fff}
+.todo .sub{color:#D8EBDF}
+.sep{height:1px;background:#5E9378}
+.btn{min-height:44px;min-width:72px;padding:0 16px;border:0;border-radius:22px;background:#2F6B4F;color:#fff;font-weight:700;cursor:pointer}
+.btn.w{background:#fff;color:#2F6B4F}
+.btn.l{background:#E7EFE9;color:#2F6B4F}
+.btn.y{background:#E0A33A;color:#1F2A22;min-height:52px;border-radius:26px;width:100%;font-size:17px}
+.btn.r{background:#F3DCD6;color:#7A2A1D}
+.plant{display:flex;align-items:center;gap:10px;background:#fff;border-radius:16px;padding:10px 4px 10px 10px}
+.plant a.main{display:flex;align-items:center;gap:12px;flex:1;text-decoration:none;color:inherit;min-width:0}
+.ph{border-radius:12px;background:#CFE3D3 center/cover no-repeat;display:flex;align-items:center;justify-content:center;flex:none}
+.ph.has svg{display:none}
+.name{font-size:16px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.due{color:#9A5B00;font-size:14px}
+.ic{width:44px;height:44px;border:0;background:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.tabs{display:flex;gap:8px}
+.tabs a{flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:22px;font-weight:700;text-decoration:none;background:#E7EFE9;color:#2F6B4F}
+.tabs a.on{background:#2F6B4F;color:#fff}
+.hero{height:200px;border-radius:20px;background:#CFE3D3 center/cover no-repeat;display:flex;align-items:center;justify-content:center}
+.hero.has svg{display:none}
+.alert{background:#FFF4DC;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.4}
+.warn{background:#FBE3DC;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.4}
+.badge{display:inline-block;font-size:12px;font-weight:600;border-radius:10px;padding:3px 8px;background:#E7EFE9;color:#2F6B4F}
+.badge.o{background:#FFF4DC;color:#7A4A00}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:9}
+#modal.on{display:flex}
+#sheet{background:#F6F4EC;width:100%;max-width:480px;border-radius:24px 24px 0 0;padding:20px 16px 28px;display:flex;flex-direction:column;gap:12px;max-height:85vh;overflow:auto}
+input[type=text],input[type=number],input[type=search],select{width:100%;min-height:48px;border:1px solid #C9CFC4;border-radius:14px;padding:0 14px;background:#fff;color:#1F2A22}
+.pick{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;min-height:52px;text-align:left;background:#fff;border:0;border-radius:14px;padding:10px 14px;cursor:pointer}
+.foot{font-size:12px;color:#5B6358;line-height:1.5}
+.tg{display:flex;align-items:center;gap:10px;min-height:44px}
+.tg input{width:22px;height:22px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"><div id="sheet"></div></div>
+<script>
+'use strict';
+/* ================= DATI ================= */
+const LEAF='<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2F6B4F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V11"/><path d="M12 11C12 6 8 4 4 4c0 4 2 7 8 7z"/><path d="M12 14c0-4 3-6 8-6 0 4-2 6-8 6z"/></svg>';
+const PENCIL='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B6358" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
+const GEN='Dati generali di coltivazione: controllali con la tua esperienza.';
+
+const BASIL={
+  sci:'Ocimum basilicum', wiki:['Ocimum basilicum'], outdoor:true, verificata:false, fonti:[],
+  luce:'Sole pieno, almeno 6 ore al giorno.',
+  acqua:'Terra sempre un po\' umida, mai fradicia. Annaffia alla base la mattina, senza bagnare le foglie.',
+  tipoAcqua:'Acqua del rubinetto a temperatura ambiente.',
+  terra:'Terriccio universale leggero, che scola bene. Vaso con fori.',
+  concime:'Concime liquido universale, mezza dose ogni 2 settimane in primavera ed estate.',
+  tipo:'Annuale: vive una stagione, da primavera ad autunno. Teme il freddo.',
+  temp:'Sta bene sopra i 10 °C.', tMin:10,
+  potatura:'Pinza le cime sopra un paio di foglie, spesso, per farlo ramificare. Togli i fiori.',
+  rinvaso:'Non serve: a fine stagione finisce. Se lo compri in vasetto, mettilo subito in un vaso più grande.',
+  waterSummer:2, waterWinter:3, fertDays:14, fertMonths:[4,5,6,7,8,9],
+  prune:{months:[4,5,6,7,8,9],every:14,label:'Pinza le cime'},
+  problemi:[
+    ['Foglie gialle','troppa acqua o freddo','aspetta che la terra asciughi un po\''],
+    ['Foglie nere','freddo sotto i 10 °C o muffa','tienilo al caldo, togli le foglie nere'],
+    ['Macchie gialle sopra e muffa grigia sotto','peronospora','togli le foglie malate, non bagnare le foglie'],
+    ['Insetti piccoli sulle cime','afidi','lavali con acqua e un po\' di sapone di Marsiglia diluito']
+  ]
+};
+const MINT={
+  sci:'Mentha × piperita', wiki:['Mentha × piperita','Menta'], outdoor:true, verificata:false, fonti:[],
+  luce:'Sole o mezz\'ombra. Con molto caldo meglio mezz\'ombra.',
+  acqua:'Terra sempre un po\' umida, non lasciarla seccare.',
+  tipoAcqua:'Acqua del rubinetto va bene.',
+  terra:'Terriccio universale ricco, in un vaso grande: la menta si allarga.',
+  concime:'Concime liquido ogni 3-4 settimane da aprile a settembre.',
+  tipo:'Perenne. In inverno la parte fuori terra secca, in primavera ricresce. Resiste al freddo.',
+  temp:'Resiste anche sotto zero.', tMin:-10,
+  potatura:'Taglia spesso le cime: la fa più folta. Togli i fiori. A fine autunno taglia tutto a circa 5 cm.',
+  rinvaso:'Ogni 1-2 anni dividi il cespo e cambia la terra.',
+  waterSummer:2, waterWinter:7, fertDays:21, fertMonths:[4,5,6,7,8,9],
+  prune:{months:[4,5,6,7,8,9,10],every:14,label:'Taglia le cime'},
+  problemi:[
+    ['Puntini arancioni sotto le foglie','ruggine','togli le foglie malate, non bagnare le foglie'],
+    ['Foglie gialle','troppa acqua o poca luce','controlla la terra e sposta in un posto più luminoso'],
+    ['Ragnatele fini sotto le foglie','ragnetto rosso (caldo e aria secca)','lava le foglie con acqua e aumenta l\'umidità'],
+    ['Insetti piccoli sulle cime','afidi','lavali con acqua e un po\' di sapone di Marsiglia diluito']
+  ]
+};
+const CAT={
+ 'basilico':{...BASIL,nome:'Basilico'},
+ 'basilico-thai':{...BASIL,nome:'Basilico thai',nota:'Varietà di basilico: valgono le cure del basilico.'},
+ 'basilico-liquirizia':{...BASIL,nome:'Basilico liquirizia',nota:'Varietà di basilico: valgono le cure del basilico.'},
+ 'basilico-vaniglia':{...BASIL,nome:'Basilico vaniglia',nota:'Varietà di basilico: valgono le cure del basilico.'},
+ 'menta-arancio':{...MINT,nome:'Menta arancio',nota:'Varietà di menta: valgono le cure della menta.'},
+ 'menta-cioccolato':{...MINT,nome:'Menta cioccolato',nota:'Varietà di menta: valgono le cure della menta.'},
+ 'menta-sweet-lemon':{...MINT,nome:'Menta sweet lemon',nota:'Varietà di menta: valgono le cure della menta.'},
+ 'monstera':{
+  nome:'Monstera deliciosa',sci:'Monstera deliciosa',wiki:['Monstera deliciosa'],outdoor:false,verificata:false,fonti:[],
+  luce:'Luce forte ma non diretta. Il sole diretto brucia le foglie.',
+  acqua:'Quando i primi 5 cm di terra sono asciutti (infila un dito). In inverno meno. Svuota sempre il sottovaso.',
+  tipoAcqua:'Acqua del rubinetto lasciata riposare un giorno, non fredda.',
+  terra:'Terriccio per piante verdi con corteccia e perlite, soffice e che scola.',
+  concime:'Liquido per piante verdi, 1 volta al mese da aprile a settembre.',
+  tipo:'Sempreverde rampicante. Cresce in primavera-estate, riposa in inverno.',
+  temp:'Sta bene tra 15 e 30 °C.',tMin:12,
+  potatura:'In primavera. Togli foglie secche e taglia sopra un nodo se è troppo alta. Forbici pulite.',
+  rinvaso:'Ogni 2 anni in primavera, vaso più grande di 3-5 cm. Le serve un tutore per salire.',
+  tossica:'Tossica se mangiata: lontano da cani e gatti.',
+  waterSummer:7,waterWinter:12,fertDays:30,fertMonths:[4,5,6,7,8,9],
+  prune:{months:[3,4,5],every:300,label:'Pota'},
+  problemi:[
+   ['Foglie gialle','troppa acqua','aspetta che la terra asciughi'],
+   ['Punte marroni','aria secca o poca acqua','annaffia con più regolarità'],
+   ['Ragnatele sotto le foglie','ragnetto rosso','lava le foglie, poi olio di neem'],
+   ['Cotone bianco sui nodi','cocciniglia','pulisci con un cotone e un po\' di alcol'],
+   ['Foglie che cadono e terra che puzza','marciume delle radici','rinvasa e taglia le radici nere']
+  ]},
+ 'pervinca':{
+  nome:'Pervinca del Madagascar',sci:'Catharanthus roseus',wiki:['Catharanthus roseus'],outdoor:true,verificata:false,fonti:[],
+  luce:'Sole pieno o luce molto forte.',
+  acqua:'Poca: quando la terra è asciutta per 2-3 cm. Non ama i ristagni.',
+  tipoAcqua:'Acqua del rubinetto va bene.',
+  terra:'Terriccio universale con sabbia o perlite, che scola bene.',
+  concime:'Concime liquido per piante da fiore ogni 2 settimane in primavera-estate.',
+  tipo:'Da noi si tiene come estiva: fiorisce da primavera ad autunno. Non resiste al gelo.',
+  temp:'Teme il freddo: sotto i 10 °C portala dentro.',tMin:10,
+  potatura:'Togli i fiori secchi e accorcia le cime in primavera: diventa più folta.',
+  rinvaso:'Ogni anno in primavera.',
+  tossica:'Tutta la pianta è velenosa se mangiata.',
+  waterSummer:3,waterWinter:10,fertDays:14,fertMonths:[4,5,6,7,8,9],
+  prune:{months:[3,4],every:300,label:'Accorcia le cime'},
+  problemi:[
+   ['Foglie gialle','troppa acqua','aspetta che la terra asciughi'],
+   ['Base del fusto molle e scura','marciume per terra sempre bagnata','annaffia meno e usa terra che scola'],
+   ['Pochi fiori','poca luce','spostala al sole'],
+   ['Insetti piccoli o piccole mosche bianche','afidi o mosca bianca','lava con acqua e sapone di Marsiglia diluito']
+  ]},
+ 'incenso':{
+  nome:'Incenso',sci:'Plectranthus coleoides',wiki:['Plectranthus coleoides','Plectranthus'],outdoor:false,verificata:true,
+  fonti:[['Greenstyle: pianta dell\'incenso','https://www.greenstyle.it/pianta-incenso-come-coltiva-quali-attenzioni-dare-305988.html'],['Jardineria On: incense','https://www.jardineriaon.com/en/incense.html']],
+  nota:'Ho dato per scontato che "incenso" sia Plectranthus coleoides (foglie verdi con bordo bianco). Se è un\'altra, dimmelo.',
+  luce:'Luminosa ma non in pieno sole: meglio mezz\'ombra.',
+  acqua:'Regolare. Togli l\'acqua del sottovaso dopo 15-20 minuti, altrimenti le radici marciscono. Quanti giorni tra un\'annaffiatura e l\'altra: impostalo tu sotto.',
+  tipoAcqua:'Acqua del rubinetto va bene.',
+  terra:'Terriccio universale che scola bene.',
+  concime:'Non ho un dato verificato. Per ora nessun promemoria.',
+  tipo:'Sempreverde perenne. Teme il freddo.',
+  temp:'Soffre il freddo: in inverno tienila in casa.',tMin:10,tMinEst:true,
+  potatura:'Non ho un dato verificato. Per ora nessun promemoria.',
+  rinvaso:'Non ho un dato verificato.',
+  waterSummer:null,waterWinter:null,fertDays:null,fertMonths:[],prune:null,
+  problemi:[
+   ['Foglie molli e gialle','troppa acqua','svuota il sottovaso e aspetta che la terra asciughi'],
+   ['Foglie secche e scure','freddo o poca acqua','spostala al caldo e controlla la terra']
+  ]},
+ 'nepenthes':{
+  nome:'Nepenthes mirabilis',sci:'Nepenthes mirabilis',wiki:['Nepenthes mirabilis'],outdoor:false,verificata:true,
+  fonti:[['Clemson HGIC: Nepenthes','https://hgic.clemson.edu/factsheet/tropical-pitcher-plants-nepenthes-spp-indoor-care-growing-tips-plant-guide/'],['NECPS: Nepenthes','https://www.necps.org/caresheets/nepenthes'],['Carnivero: Nepenthes lowland','https://carnivero.com/pages/lowland-nepenthes-care']],
+  luce:'Molta luce, ma non sole forte sulle foglie. Ama l\'umidità alta, sopra il 60%.',
+  acqua:'Terra sempre umida, mai asciutta e mai nell\'acqua ferma. Controlla ogni 2-3 giorni.',
+  tipoAcqua:'SOLO acqua piovana, distillata o demineralizzata (osmosi). Il rubinetto la rovina.',
+  terra:'Torba con perlite (o sfagno e perlite). Vaso che scola e non rilascia minerali. Niente terriccio normale.',
+  concime:'Di solito non serve. Non metterlo nella terra.',
+  tipo:'Sempreverde tropicale, carnivora. Non ha un vero riposo.',
+  temp:'Meglio tra 21 e 32 °C, con molta umidità.',tMin:15,tMinEst:true,
+  potatura:'Non c\'è una stagione fissa. Taglia solo il materiale secco o molto lungo.',
+  rinvaso:'Quando le radici riempiono il vaso, con torba e perlite nuove.',
+  waterSummer:3,waterWinter:4,fertDays:null,fertMonths:[],prune:null,
+  problemi:[
+   ['Punte delle foglie secche','aria secca o acqua troppo ricca di minerali','usa solo acqua piovana o distillata e alza l\'umidità'],
+   ['Niente vasetti nuovi','poca umidità o poca luce','aumenta umidità e luce'],
+   ['Foglie e fusto con insetti','cocciniglia o ragnetto','pulisci a mano, non usare prodotti forti']
+  ]},
+ 'lavanda':{
+  nome:'Lavanda di Provenza',sci:'Lavandula angustifolia',wiki:['Lavandula angustifolia','Lavandula'],outdoor:true,verificata:false,fonti:[],
+  luce:'Sole pieno tutto il giorno.',
+  acqua:'Poca. Solo quando la terra è asciutta in profondità (circa 5 cm). Mai ristagni.',
+  tipoAcqua:'Acqua del rubinetto va bene.',
+  terra:'Terra povera e molto drenante: terriccio con sabbia e ghiaino. Ama il calcare.',
+  concime:'Quasi niente: al massimo un po\' di concime per piante da fiore a primavera.',
+  tipo:'Sempreverde perenne. Resiste al freddo, non all\'umidità.',
+  temp:'Resiste anche sotto zero.',tMin:-10,
+  potatura:'Dopo la fioritura (fine estate) taglia i fiori secchi e accorcia di un terzo. Non tagliare nel legno vecchio senza foglie.',
+  rinvaso:'Ogni 2-3 anni in primavera.',
+  waterSummer:7,waterWinter:21,fertDays:365,fertMonths:[4],
+  prune:{months:[8,9],every:300,label:'Pota dopo la fioritura'},
+  problemi:[
+   ['Foglie ingiallite e rami molli','troppa acqua, radici che marciscono','annaffia meno e usa terra che scola'],
+   ['Schiuma bianca sui rami','sputacchina (insetto)','lavala via con acqua'],
+   ['Rami spogli e legnosi','potata nel legno vecchio o pianta vecchia','pota ogni anno, poco, dopo la fioritura']
+  ]},
+ 'sansevieria':{
+  nome:'Lingua di suocera',sci:'Dracaena trifasciata (Sansevieria)',wiki:['Sansevieria trifasciata','Dracaena trifasciata'],outdoor:false,verificata:false,fonti:[],
+  luce:'Va bene quasi ovunque, da luce forte a poca luce. Evita il sole diretto forte.',
+  acqua:'Poca: ogni 2-3 settimane in estate, ogni 4-5 in inverno, solo a terra asciutta. Mai ristagni.',
+  tipoAcqua:'Acqua del rubinetto va bene.',
+  terra:'Terriccio per cactus e piante grasse, o universale con tanta sabbia e perlite.',
+  concime:'Concime per piante grasse, 1 volta al mese in primavera-estate.',
+  tipo:'Sempreverde. Cresce in primavera-estate.',
+  temp:'Teme il freddo: non sotto i 10 °C.',tMin:10,
+  potatura:'Non serve. Taglia alla base solo le foglie secche o rovinate.',
+  rinvaso:'Ogni 2-3 anni, quando le radici riempiono il vaso.',
+  tossica:'Un po\' tossica se mangiata: lontano da cani e gatti.',
+  waterSummer:14,waterWinter:30,fertDays:30,fertMonths:[4,5,6,7,8,9],prune:null,
+  problemi:[
+   ['Foglie molli e gialle','troppa acqua (marciume)','smetti di annaffiare, controlla le radici'],
+   ['Punte secche','aria secca o poca acqua','annaffia un po\' di più'],
+   ['Cotone bianco tra le foglie','cocciniglia','pulisci con un cotone e un po\' di alcol']
+  ]},
+ 'ferocactus':{
+  nome:'Ferocactus gracilis',sci:'Ferocactus gracilis',wiki:['Ferocactus gracilis'],outdoor:true,verificata:true,
+  fonti:[['RHS: Ferocactus gracilis','https://www.rhs.org.uk/plants/141246/wd/details'],['BCSS: coltivazione Ferocactus','https://bcss.org.uk/cultivation-notes-on-ferocactus/'],['LLIFLE: Ferocactus gracilis','https://llifle.com/Encyclopedia/CACTI/Family/Cactaceae/11980/Ferocactus_gracilis']],
+  luce:'Posizione soleggiata, meglio sole pieno.',
+  acqua:'In primavera-estate moderata, solo a terra asciutta. Da fine settembre riduci, in inverno quasi niente.',
+  tipoAcqua:'Acqua del rubinetto va bene.',
+  terra:'Terriccio per cactus, che scola molto bene (con pomice o sabbia grossa).',
+  concime:'Concime per cactus, 1 volta al mese da aprile ad agosto.',
+  tipo:'Cactus sempreverde. Cresce in estate, in inverno riposa quasi all\'asciutto.',
+  temp:'Tienilo sopra i 4-5 °C, e in inverno all\'asciutto.',tMin:5,
+  potatura:'Non si pota.',
+  rinvaso:'Ogni 2-3 anni in primavera, con guanti spessi.',
+  waterSummer:14,waterWinter:null,fertDays:30,fertMonths:[4,5,6,7,8],prune:null,
+  problemi:[
+   ['Base molle e scura','marciume per troppa acqua','smetti di annaffiare, controlla le radici'],
+   ['Fusto lungo e sottile','poca luce','spostalo al sole piano piano'],
+   ['Cotone bianco tra le spine','cocciniglia','tampona con un cotone e un po\' di alcol']
+  ]}
+};
+const START=['basilico','basilico-thai','basilico-liquirizia','basilico-vaniglia','monstera','menta-arancio','menta-cioccolato','menta-sweet-lemon','pervinca','incenso','nepenthes','lavanda','sansevieria','ferocactus'];
+const WX={0:'sereno',1:'quasi sereno',2:'poco nuvoloso',3:'nuvoloso',45:'nebbia',48:'nebbia',51:'pioggerella',53:'pioggerella',55:'pioggerella',56:'pioggia gelata',57:'pioggia gelata',61:'pioggia',63:'pioggia',65:'pioggia forte',66:'pioggia gelata',67:'pioggia gelata',71:'neve',73:'neve',75:'neve forte',77:'neve',80:'rovesci',81:'rovesci',82:'rovesci forti',85:'neve',86:'neve',95:'temporale',96:'temporale',99:'temporale'};
+
+/* ================= UTILITA ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+const daysSince=s=>{if(!s)return Infinity;return Math.round((new Date(todayStr()+'T00:00:00')-new Date(s+'T00:00:00'))/864e5);};
+const fmtDate=s=>s?new Date(s+'T00:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'long'}):'mai';
+const fmtAgo=s=>{const d=daysSince(s);return d===Infinity?'mai':d===0?'oggi':d===1?'ieri':d+' giorni fa';};
+
+/* ================= STATO ================= */
+const LS='pp_v1';
+function mk(key,i){const c=CAT[key],t=todayStr();return{id:'p'+(i+1),key,name:c.nome,wiki:c.wiki,outdoor:c.outdoor,lastWater:t,lastFert:t,lastPrune:t,lastCheck:null,waterDays:null,growth:[],issues:[]};}
+function load(){try{const s=JSON.parse(localStorage.getItem(LS));if(s&&Array.isArray(s.plants))return s;}catch(e){}return{v:1,plants:START.map(mk),loc:null,next:100};}
+function save(){try{localStorage.setItem(LS,JSON.stringify(S));}catch(e){}}
+let S=load();
+let W=null;
+
+/* ================= LOGICA ================= */
+function waterInterval(p){
+  if(p.waterDays)return p.waterDays;
+  const c=CAT[p.key];if(!c)return null;
+  const m=new Date().getMonth()+1;
+  return (m>=4&&m<=9)?c.waterSummer:c.waterWinter;
+}
+function compute(){
+  const m=new Date().getMonth()+1,list=[],alerts=[],cold=[];
+  for(const p of S.plants){
+    const c=CAT[p.key]||null;
+    const wi=waterInterval(p);
+    if(wi&&daysSince(p.lastWater)>=wi){
+      let sub=c&&c.tipoAcqua&&p.key==='nepenthes'?c.tipoAcqua:(CAT[p.key]?'':'');
+      if(W&&p.outdoor&&W.rain>=2)sub='Oggi piove: guarda se la terra è già bagnata.';
+      list.push({id:p.id,kind:'acqua',title:'Annaffia '+p.name,sub});
+    }
+    if(c&&c.fertDays&&c.fertMonths.includes(m)&&daysSince(p.lastFert)>=c.fertDays)
+      list.push({id:p.id,kind:'concime',title:'Concima '+p.name,sub:c.concime});
+    if(c&&c.prune&&c.prune.months.includes(m)&&daysSince(p.lastPrune)>=c.prune.every)
+      list.push({id:p.id,kind:'potatura',title:c.prune.label+': '+p.name,sub:c.potatura});
+    if(W&&p.outdoor&&c&&c.tMin!=null&&W.min<c.tMin)cold.push(p.name);
+  }
+  if(cold.length)alerts.push({id:'freddo',text:'Minima di '+Math.round(W.min)+' °C nelle prossime 24 ore: porta dentro '+cold.join(', ')+'.'});
+  return{list,alerts};
+}
+function statusOf(p){
+  const c=CAT[p.key],m=new Date().getMonth()+1,wi=waterInterval(p);
+  if(wi&&daysSince(p.lastWater)>=wi)return{t:'Annaffia oggi',due:true};
+  if(c&&c.fertDays&&c.fertMonths.includes(m)&&daysSince(p.lastFert)>=c.fertDays)return{t:'Concima oggi',due:true};
+  if(c&&c.prune&&c.prune.months.includes(m)&&daysSince(p.lastPrune)>=c.prune.every)return{t:c.prune.label+' oggi',due:true};
+  if(wi){const left=wi-daysSince(p.lastWater);return{t:left===1?'Annaffia domani':'Annaffia tra '+left+' giorni',due:false};}
+  if(!c)return{t:'Imposta ogni quanti giorni annaffiare',due:false};
+  if(p.key==='incenso')return{t:'Imposta ogni quanti giorni annaffiare',due:false};
+  return{t:'Per ora niente da fare',due:false};
+}
+
+/* ================= METEO E POSIZIONE ================= */
+async function loadWeather(force){
+  if(!S.loc){W=null;return;}
+  const key=S.loc.lat+','+S.loc.lon;let c=null;
+  try{c=JSON.parse(localStorage.getItem('pp_wx')||'null');}catch(e){}
+  if(!force&&c&&c.k===key&&Date.now()-c.t<18e5){W=c.w;return;}
+  try{
+    const u='https://api.open-meteo.com/v1/forecast?latitude='+S.loc.lat+'&longitude='+S.loc.lon+'&current=temperature_2m,weather_code&hourly=temperature_2m&daily=precipitation_sum&forecast_days=2&timezone=auto';
+    const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();
+    let i=j.hourly.time.findIndex(t=>t>=j.current.time);if(i<0)i=0;
+    const nx=j.hourly.temperature_2m.slice(i,i+24);
+    W={temp:j.current.temperature_2m,code:j.current.weather_code,min:Math.min.apply(null,nx),rain:(j.daily.precipitation_sum||[0])[0]||0};
+    localStorage.setItem('pp_wx',JSON.stringify({t:Date.now(),k:key,w:W}));
+  }catch(e){W=c&&c.k===key?c.w:null;}
+}
+function useGeo(){
+  if(!navigator.geolocation){toast('Questo telefono non dà la posizione.');return;}
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=+pos.coords.latitude.toFixed(3),lon=+pos.coords.longitude.toFixed(3);
+    let name='La tua posizione';
+    try{const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&accept-language=it&lat='+lat+'&lon='+lon);const j=await r.json();const a=j.address||{};name=a.city||a.town||a.village||a.municipality||j.name||name;}catch(e){}
+    S.loc={lat,lon,name};save();closeModal();await loadWeather(true);render();notifyToday();
+  },()=>toast('Non ho il permesso di leggere la posizione. Cerca la città a mano.'),{timeout:15000,maximumAge:6e5});
+}
+async function searchCity(q){
+  const box=$('#cityres');if(!q.trim()){box.innerHTML='';return;}
+  try{
+    const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?count=6&language=it&format=json&name='+encodeURIComponent(q));
+    const j=await r.json();const rs=j.results||[];
+    box.innerHTML=rs.length?rs.map(x=>'<button class="pick" data-act="city" data-lat="'+x.latitude+'" data-lon="'+x.longitude+'" data-name="'+esc(x.name)+'"><b>'+esc(x.name)+'</b><span class="sub">'+esc([x.admin1,x.country].filter(Boolean).join(', '))+'</span></button>').join(''):'<p class="sub">Nessuna città trovata.</p>';
+  }catch(e){box.innerHTML='<p class="sub">Non riesco a cercare: manca internet?</p>';}
+}
+
+/* ================= FOTO ================= */
+async function photoFor(titles){
+  for(const t of titles){
+    const k='img:'+t;const v=localStorage.getItem(k);
+    if(v==='none')continue;if(v)return v;
+    let netErr=false,found=null;
+    for(const lang of['it','en']){
+      try{
+        const r=await fetch('https://'+lang+'.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(t.replace(/ /g,'_')));
+        if(!r.ok)continue;const j=await r.json();
+        if(j.thumbnail&&j.thumbnail.source){found=j.thumbnail.source;break;}
+      }catch(e){netErr=true;}
+    }
+    if(found){try{localStorage.setItem(k,found);}catch(e){}return found;}
+    if(!netErr)try{localStorage.setItem(k,'none');}catch(e){}
+  }
+  return null;
+}
+function hydrate(){
+  document.querySelectorAll('[data-ph]').forEach(async el=>{
+    if(el.dataset.done)return;el.dataset.done='1';
+    let t;try{t=JSON.parse(el.dataset.ph);}catch(e){return;}
+    const u=await photoFor(t);
+    if(u&&el.isConnected){el.style.backgroundImage='url("'+u+'")';el.classList.add('has');}
+  });
+}
+const ph=(p,s)=>'<div class="ph" style="width:'+s+'px;height:'+s+'px" data-ph="'+esc(JSON.stringify(p.wiki&&p.wiki.length?p.wiki:[p.name]))+'">'+LEAF+'</div>';
+
+/* ================= NOTIFICHE ================= */
+async function notifyToday(force){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const d=todayStr();if(!force&&localStorage.getItem('pp_notif')===d)return;
+  const{list,alerts}=compute();if(!list.length&&!alerts.length)return;
+  let reg=null;try{reg=await navigator.serviceWorker.getRegistration();}catch(e){}
+  const show=async(t,b,tag)=>{try{if(reg)await reg.showNotification(t,{body:b,tag,icon:'icon-192.png',badge:'icon-192.png'});else new Notification(t,{body:b,tag});}catch(e){}};
+  for(const a of alerts.slice(0,3))await show('Attenzione',a.text,'a'+a.id);
+  for(const t of list.slice(0,6))await show('Oggi: '+t.title.charAt(0).toLowerCase()+t.title.slice(1),t.sub||'','t'+t.id+t.kind);
+  if(list.length>6)await show('Altre cose da fare','Altre '+(list.length-6)+' cose oggi nell\'app.','more');
+  try{localStorage.setItem('pp_notif',d);}catch(e){}
+}
+async function enableNotif(){
+  if(!('Notification' in window)){toast('Questo browser non supporta le notifiche.');return;}
+  const r=await Notification.requestPermission();
+  if(r==='granted'){await notifyToday(true);toast('Notifiche attive.');}else toast('Notifiche non permesse.');
+  render();
+}
+
+/* ================= UI ================= */
+function toast(t){const s=$('#sheet');openModal('<p>'+esc(t)+'</p><button class="btn" data-act="close">OK</button>');}
+function openModal(h){$('#sheet').innerHTML=h;$('#modal').classList.add('on');const i=$('#sheet input');if(i)setTimeout(()=>i.focus(),50);}
+function closeModal(){$('#modal').classList.remove('on');}
+
+function homeHTML(){
+  const{list,alerts}=compute();
+  let wx='';
+  if(!S.loc)wx='<div class="wx"><span class="lbl">Meteo</span><span class="val">Dimmi dove sei: così ti avviso con il tempo vero, non con il periodo.</span><div class="row" style="flex-wrap:wrap;margin-top:6px"><button class="btn" data-act="geo">Usa la mia posizione</button><button class="btn l" data-act="citybox">Scrivi la città</button></div></div>';
+  else if(!W)wx='<div class="wx"><span class="lbl">'+esc(S.loc.name)+'</span><span class="val">Non riesco a leggere il meteo: manca internet?</span><div class="row"><button class="btn l" data-act="refresh">Riprova</button><button class="btn l" data-act="citybox">Cambia luogo</button></div></div>';
+  else wx='<div class="wx"><span class="lbl">'+esc(S.loc.name)+', adesso</span><span style="font-size:17px;font-weight:700">'+Math.round(W.temp)+' °C, '+(WX[W.code]||'')+'</span><span class="sub" style="color:#2B3A47">Minima nelle prossime 24 ore: '+Math.round(W.min)+' °C'+(W.rain>=1?' · pioggia oggi: '+W.rain.toFixed(0)+' mm':'')+'</span><div><button class="btn l" style="min-height:40px" data-act="citybox">Cambia luogo</button></div></div>';
+  const al=alerts.map(a=>'<div class="alert"><b>'+esc(a.text)+'</b></div>').join('');
+  const todo=list.length?'<div class="todo"><span class="lbl">DA FARE OGGI</span>'+list.map((t,i)=>(i?'<div class="sep"></div>':'')+'<div class="row" style="justify-content:space-between"><div style="min-width:0"><div style="font-weight:600;font-size:16px">'+esc(t.title)+'</div>'+(t.sub?'<div class="sub">'+esc(t.sub)+'</div>':'')+'</div><button class="btn w" data-act="done" data-id="'+t.id+'" data-kind="'+t.kind+'">Fatto</button></div>').join('')+'</div>':'<div class="card"><b>Oggi non c\'è niente da fare.</b></div>';
+  const pl=S.plants.map(p=>{const st=statusOf(p),c=CAT[p.key];const sub=(c&&c.nome!==p.name?esc(c.nome)+' · ':'')+esc(st.t);return '<div class="plant"><a class="main" href="#/p/'+p.id+'/s">'+ph(p,56)+'<div style="min-width:0"><div class="name">'+esc(p.name)+'</div><div class="'+(st.due?'due':'sub')+'">'+sub+'</div></div></a><button class="ic" aria-label="Cambia nome" data-act="rename" data-id="'+p.id+'">'+PENCIL+'</button></div>';}).join('');
+  const nb='Notification' in window&&Notification.permission==='granted'?'<span class="badge">Notifiche attive</span>':'<button class="btn l" data-act="notif">Attiva le notifiche</button>';
+  return '<h1>Le mie piante</h1>'+wx+al+todo+'<h2>Tutte le piante ('+S.plants.length+')</h2>'+pl+'<a class="btn y" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/add">+ Aggiungi pianta</a><div class="row" style="justify-content:center">'+nb+'</div><p class="foot">Meteo: Open-Meteo (CC BY 4.0). Foto: Wikipedia. Le notifiche arrivano quando apri l\'app.</p>';
+}
+function tabsHTML(id,on){return '<div class="tabs">'+[['s','Scheda'],['h','Salute'],['c','Crescita']].map(t=>'<a href="#/p/'+id+'/'+t[0]+'"'+(t[0]===on?' class="on"':'')+'>'+t[1]+'</a>').join('')+'</div>';}
+function headHTML(p,c){return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>'+ph(p,48)+'<div style="min-width:0"><div style="font-size:22px;font-weight:700">'+esc(p.name)+'</div><div class="sub">'+(c?esc(c.sci):'Dati di cura non disponibili')+'</div></div></div>';}
+function r(l,v){return '<div class="card"><div class="lbl">'+l+'</div><div class="val">'+esc(v)+'</div></div>';}
+
+function schedaHTML(p,c){
+  let h=headHTML(p,c)+tabsHTML(p.id,'s');
+  if(!c){
+    h+='<div class="warn">Per questa pianta non ho dati di cura verificati, e non voglio inventarli. Puoi comunque impostare tu ogni quanti giorni annaffiarla.</div>';
+  }else{
+    h+='<div class="'+(c.verificata?'badge':'badge o')+'" style="align-self:flex-start">'+(c.verificata?'Dati controllati su fonti':'Dati generali: da verificare')+'</div>';
+    if(c.nota)h+='<div class="alert">'+esc(c.nota)+'</div>';
+    h+=r('Dove sta meglio',c.luce)+r('Acqua',c.acqua)+r('Che acqua',c.tipoAcqua)+r('Terra',c.terra)+r('Concime',c.concime)+r('Tipo',c.tipo)+r('Temperatura',c.temp+(c.tMinEst?' (valore stimato)':''))+r('Potatura',c.potatura)+r('Rinvaso',c.rinvaso);
+    if(c.tossica)h+='<div class="warn"><b>Attenzione:</b> '+esc(c.tossica)+'</div>';
+    if(c.fonti&&c.fonti.length)h+='<p class="foot">Fonti: '+c.fonti.map(f=>'<a href="'+esc(f[1])+'" target="_blank" rel="noopener">'+esc(f[0])+'</a>').join(' · ')+'</p>';
+  }
+  const wi=waterInterval(p);
+  h+='<h2>Come la tengo</h2><div class="card">'
+   +'<label class="tg"><input type="checkbox" data-act="outdoor" data-id="'+p.id+'"'+(p.outdoor?' checked':'')+'> Sta all\'aperto (balcone o giardino)</label>'
+   +'<div class="lbl" style="margin-top:8px">Annaffiare ogni (giorni)</div>'
+   +'<div class="row"><input type="number" min="1" max="90" id="wd" placeholder="'+(wi?'automatico: '+wi:'imposta')+'" value="'+(p.waterDays||'')+'"><button class="btn l" data-act="setwater" data-id="'+p.id+'">Salva</button></div>'
+   +'<div class="sub" style="margin-top:6px">Vuoto = uso i giorni della scheda, secondo la stagione.</div></div>';
+  h+='<div class="card"><div class="lbl">Ultime volte</div><div class="val">Annaffiata: '+fmtAgo(p.lastWater)+'<br>Concimata: '+fmtAgo(p.lastFert)+'<br>Potata: '+fmtAgo(p.lastPrune)+'</div><div class="row" style="flex-wrap:wrap;margin-top:8px"><button class="btn l" data-act="done" data-id="'+p.id+'" data-kind="acqua">Annaffiata oggi</button><button class="btn l" data-act="done" data-id="'+p.id+'" data-kind="concime">Concimata oggi</button><button class="btn l" data-act="done" data-id="'+p.id+'" data-kind="potatura">Potata oggi</button></div></div>';
+  h+='<div class="row"><button class="btn l" data-act="rename" data-id="'+p.id+'">Cambia nome</button><button class="btn r" data-act="del" data-id="'+p.id+'">Elimina</button></div>';
+  return h;
+}
+function saluteHTML(p,c){
+  let h=headHTML(p,c)+tabsHTML(p.id,'h');
+  const open=p.issues.filter(i=>!i.done);
+  h+='<div class="todo" style="background:'+(open.length?'#9A5B00':'#2F6B4F')+'"><span class="lbl">STATO</span><span style="font-size:22px;font-weight:700">'+(open.length?'Problemi segnati: '+open.length:'Nessun problema segnato')+'</span><span class="sub">Ultimo controllo: '+fmtAgo(p.lastCheck)+'</span><div><button class="btn w" data-act="done" data-id="'+p.id+'" data-kind="controllo">Controllata oggi, sta bene</button></div></div>';
+  if(open.length)h+=open.map((i,k)=>'<div class="card"><b>'+esc(i.t)+'</b><div class="sub">Segnato '+fmtAgo(i.d)+'</div><button class="btn l" style="margin-top:6px" data-act="resolve" data-id="'+p.id+'" data-k="'+p.issues.indexOf(i)+'">Risolto</button></div>').join('');
+  if(c){
+    h+='<h2>Se vedi questo</h2>'+c.problemi.map((q,k)=>'<div class="card"><b>'+esc(q[0])+'</b><div class="sub">Causa: '+esc(q[1])+'</div><div class="val">Cosa fare: '+esc(q[2])+'</div><button class="btn l" style="margin-top:6px" data-act="issue" data-id="'+p.id+'" data-k="'+k+'">Ce l\'ha</button></div>').join('');
+  }else h+='<div class="warn">Non ho una lista di problemi verificata per questa pianta.</div>';
+  return h;
+}
+function crescitaHTML(p,c){
+  let h=headHTML(p,c)+tabsHTML(p.id,'c');
+  const g=p.growth.slice().sort((a,b)=>a.d<b.d?-1:1);
+  const last=g[g.length-1],first=g[0];
+  h+='<div class="card"><div class="lbl">Altezza</div>';
+  if(!g.length)h+='<div class="val">Nessuna misura. Misura la pianta e scrivila qui sotto.</div>';
+  else{
+    h+='<div style="font-size:36px;font-weight:700">'+last.cm+' cm</div>';
+    if(g.length>1){const diff=+(last.cm-first.cm).toFixed(1),days=Math.max(1,daysSince(first.d)-daysSince(last.d));h+='<div style="color:#2F6B4F;font-weight:600">'+(diff>=0?'+':'')+diff+' cm dal '+fmtDate(first.d)+' ('+((diff/days*30).toFixed(1))+' cm al mese)</div>';
+      const W2=330,H2=130,xs=g.map(x=>new Date(x.d+'T00:00:00').getTime()),x0=xs[0],x1=xs[xs.length-1]||x0+1,vs=g.map(x=>x.cm),lo=Math.min.apply(null,vs),hi=Math.max.apply(null,vs),span=hi-lo||1;
+      const pts=g.map((x,i)=>[(20+(W2-40)*(x1===x0?0.5:(xs[i]-x0)/(x1-x0))).toFixed(1),(H2-20-(H2-40)*((x.cm-lo)/span)).toFixed(1)]);
+      h+='<svg viewBox="0 0 '+W2+' '+(H2+16)+'" width="100%" role="img" aria-label="Altezza nel tempo"><line x1="10" y1="'+(H2-8)+'" x2="320" y2="'+(H2-8)+'" stroke="#D9DDD3"/><polyline fill="none" stroke="#2F6B4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="'+pts.map(q=>q.join(',')).join(' ')+'"/>'+pts.map(q=>'<circle cx="'+q[0]+'" cy="'+q[1]+'" r="4" fill="#2F6B4F"/>').join('')+'</svg>';
+    }
+  }
+  h+='</div><div class="card"><div class="lbl">Nuova misura</div><div class="row"><input type="number" step="0.5" min="0" id="cm" placeholder="cm"><button class="btn" data-act="measure" data-id="'+p.id+'">Salva</button></div></div>';
+  if(g.length)h+='<div class="card"><div class="lbl">Misure</div>'+g.slice().reverse().slice(0,10).map(x=>'<div class="row" style="justify-content:space-between;min-height:32px"><span>'+fmtDate(x.d)+'</span><b>'+x.cm+' cm</b></div>').join('')+'</div>';
+  return h;
+}
+function addHTML(){
+  return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a><h1 style="font-size:24px">Aggiungi pianta</h1></div><input type="search" id="q" placeholder="Nome della pianta (italiano, inglese, latino)"><div id="res" style="display:flex;flex-direction:column;gap:8px"><p class="sub">Cerco nei nomi di Wikipedia. Le piante nuove hanno nome e foto, ma i dati di cura non ci sono finché non li verifichiamo.</p></div>';
+}
+async function searchPlants(q){
+  const box=$('#res');if(q.trim().length<2){return;}
+  const hits=[];
+  for(const lang of['it','en']){
+    try{
+      const rr=await fetch('https://'+lang+'.wikipedia.org/w/api.php?action=query&list=search&format=json&origin=*&srlimit=6&srsearch='+encodeURIComponent(q+' pianta botanica'));
+      const j=await rr.json();(j.query&&j.query.search||[]).forEach(x=>hits.push({t:x.title,l:lang,s:x.snippet.replace(/<[^>]+>/g,'')}));
+    }catch(e){}
+  }
+  if(q!==$('#q').value)return;
+  box.innerHTML=hits.length?hits.slice(0,10).map(x=>'<button class="pick" data-act="addp" data-t="'+esc(x.t)+'"><b>'+esc(x.t)+'</b><span class="sub">'+esc(x.s.slice(0,90))+'</span></button>').join(''):'<p class="sub">Niente trovato.</p>';
+}
+
+function render(){
+  const h=location.hash||'#/';const m=h.match(/^#\/p\/([^/]+)\/(s|h|c)$/);
+  let html;
+  if(m){const p=S.plants.find(x=>x.id===m[1]);if(!p){location.hash='#/';return;}const c=CAT[p.key]||null;html=m[2]==='s'?schedaHTML(p,c):m[2]==='h'?saluteHTML(p,c):crescitaHTML(p,c);}
+  else if(h==='#/add')html=addHTML();
+  else html=homeHTML();
+  $('#app').innerHTML=html;window.scrollTo(0,0);hydrate();
+}
+function rerender(){const y=window.scrollY;const a=document.activeElement;const id=a&&a.id;render();window.scrollTo(0,y);}
+
+/* ================= EVENTI ================= */
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT')return;
+  const a=b.dataset.act,id=b.dataset.id,p=id&&S.plants.find(x=>x.id===id);
+  if(a==='close'){closeModal();return;}
+  if(a==='geo'){useGeo();return;}
+  if(a==='refresh'){await loadWeather(true);rerender();return;}
+  if(a==='notif'){enableNotif();return;}
+  if(a==='citybox'){openModal('<h2 style="margin:0">Dove sei?</h2><input type="search" id="city" placeholder="Città (es. Milano)"><div id="cityres" style="display:flex;flex-direction:column;gap:8px"></div><button class="btn l" data-act="geo">Usa la posizione del telefono</button><button class="btn l" data-act="close">Chiudi</button>');return;}
+  if(a==='city'){S.loc={lat:+(+b.dataset.lat).toFixed(3),lon:+(+b.dataset.lon).toFixed(3),name:b.dataset.name};save();closeModal();await loadWeather(true);render();notifyToday();return;}
+  if(a==='rename'&&p){openModal('<h2 style="margin:0">Nome della pianta</h2><input type="text" id="nn" maxlength="40" value="'+esc(p.name)+'"><div class="row"><button class="btn" data-act="rensave" data-id="'+p.id+'">Salva</button><button class="btn l" data-act="close">Annulla</button></div>');return;}
+  if(a==='rensave'&&p){const v=$('#nn').value.trim();if(v){p.name=v;save();}closeModal();rerender();return;}
+  if(a==='done'&&p){const k=b.dataset.kind,t=todayStr();if(k==='acqua')p.lastWater=t;else if(k==='concime')p.lastFert=t;else if(k==='potatura')p.lastPrune=t;else if(k==='controllo')p.lastCheck=t;save();rerender();return;}
+  if(a==='setwater'&&p){const v=parseInt($('#wd').value,10);p.waterDays=v>0?Math.min(v,90):null;save();rerender();return;}
+  if(a==='measure'&&p){const v=parseFloat($('#cm').value);if(!(v>0))return;p.growth=p.growth.filter(x=>x.d!==todayStr());p.growth.push({d:todayStr(),cm:+v.toFixed(1)});save();rerender();return;}
+  if(a==='issue'&&p){const c=CAT[p.key];p.issues.push({t:c.problemi[+b.dataset.k][0],d:todayStr(),done:false});save();rerender();return;}
+  if(a==='resolve'&&p){p.issues[+b.dataset.k].done=true;save();rerender();return;}
+  if(a==='del'&&p){openModal('<h2 style="margin:0">Eliminare '+esc(p.name)+'?</h2><div class="row"><button class="btn r" data-act="delok" data-id="'+p.id+'">Sì, elimina</button><button class="btn l" data-act="close">No</button></div>');return;}
+  if(a==='delok'&&p){S.plants=S.plants.filter(x=>x.id!==p.id);save();closeModal();location.hash='#/';return;}
+  if(a==='addp'){const t=b.dataset.t;S.next=(S.next||100)+1;S.plants.push({id:'p'+S.next,key:'custom',name:t,wiki:[t],outdoor:false,lastWater:null,lastFert:null,lastPrune:null,lastCheck:null,waterDays:null,growth:[],issues:[]});save();location.hash='#/p/p'+S.next+'/s';return;}
+});
+document.addEventListener('change',e=>{
+  const b=e.target;if(b.dataset&&b.dataset.act==='outdoor'){const p=S.plants.find(x=>x.id===b.dataset.id);if(p){p.outdoor=b.checked;save();}}
+});
+let tmr=null;
+document.addEventListener('input',e=>{
+  if(e.target.id==='city'){clearTimeout(tmr);const v=e.target.value;tmr=setTimeout(()=>searchCity(v),350);}
+  if(e.target.id==='q'){clearTimeout(tmr);const v=e.target.value;tmr=setTimeout(()=>searchPlants(v),400);}
+});
+$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+window.addEventListener('hashchange',render);
+document.addEventListener('visibilitychange',async()=>{if(!document.hidden){await loadWeather(false);if(!location.hash.startsWith('#/p/')&&location.hash!=='#/add')render();notifyToday();}});
+
+/* ================= AVVIO ================= */
+(async function(){
+  if('serviceWorker' in navigator){try{await navigator.serviceWorker.register('sw.js');}catch(e){}}
+  render();
+  await loadWeather(false);
+  if(!location.hash.startsWith('#/p/')&&location.hash!=='#/add')render();
+  notifyToday();
+  setInterval(async()=>{await loadWeather(false);notifyToday();},30*60*1000);
+})();
+</script>
+</body>
+</html>
