@@ -60,6 +60,7 @@ input[type=text],input[type=number],input[type=search],select{width:100%;min-hei
 <div id="app"></div>
 <input type="file" accept="image/*" id="file" hidden>
 <div id="modal"><div id="sheet"></div></div>
+<script src="catalogo.js"></script>
 <script>
 'use strict';
 /* ================= DATI ================= */
@@ -247,6 +248,21 @@ const CAT={
    ['Cotone bianco tra le spine','cocciniglia','tampona con un cotone e un po\' di alcol']
   ]}
 };
+CAT['menta-piperita']={...MINT,nome:'Menta piperita',alias:['mentha piperita','menta','peppermint'],nota:'Cure generali della menta.'};
+CAT['menta-verde']={...MINT,nome:'Menta verde',sci:'Mentha spicata',wiki:['Mentha spicata','Menta verde'],alias:['mentha spicata','spearmint','menta romana'],nota:'Cure generali della menta.'};
+if(window.EXTRA)for(const k in window.EXTRA)if(!CAT[k])CAT[k]=window.EXTRA[k];
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+function findCat(q){
+  const n=norm(q);if(n.length<2)return[];
+  const out=[];
+  for(const k in CAT){
+    const c=CAT[k],names=[c.nome,c.sci].concat(c.alias||[]).map(norm);
+    let sc=0;
+    for(const x of names){if(!x)continue;if(x===n)sc=Math.max(sc,3);else if(x.startsWith(n)||n.startsWith(x))sc=Math.max(sc,2);else if(x.includes(n)||(x.length>3&&n.includes(x)))sc=Math.max(sc,1);}
+    if(sc)out.push({k,sc});
+  }
+  return out.sort((a,b)=>b.sc-a.sc).map(x=>x.k);
+}
 const cap=s=>String(s||'').replace(/(^|[\s'’-])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase());
 const START=['basilico','basilico-thai','basilico-liquirizia','basilico-vaniglia','monstera','menta-arancio','menta-cioccolato','menta-sweet-lemon','pervinca','incenso','nepenthes','lavanda','sansevieria','ferocactus'];
 const WX={0:'sereno',1:'quasi sereno',2:'poco nuvoloso',3:'nuvoloso',45:'nebbia',48:'nebbia',51:'pioggerella',53:'pioggerella',55:'pioggerella',56:'pioggia gelata',57:'pioggia gelata',61:'pioggia',63:'pioggia',65:'pioggia forte',66:'pioggia gelata',67:'pioggia gelata',71:'neve',73:'neve',75:'neve forte',77:'neve',80:'rovesci',81:'rovesci',82:'rovesci forti',85:'neve',86:'neve',95:'temporale',96:'temporale',99:'temporale'};
@@ -487,6 +503,8 @@ function addHTML(){
 }
 async function searchPlants(q){
   const box=$('#res');if(q.trim().length<2){return;}
+  const mine=findCat(q).slice(0,8).map(k=>'<button class="pick" data-act="addc" data-k="'+esc(k)+'"><b>'+esc(cap(CAT[k].nome))+'</b><span class="sub">Con scheda di cura'+(CAT[k].verificata?' controllata':' generale (da verificare)')+'</span></button>').join('');
+  box.innerHTML=mine+'<p class="sub">Cerco anche su Wikipedia...</p>';
   const hits=[];
   for(const lang of['it','en']){
     try{
@@ -495,7 +513,8 @@ async function searchPlants(q){
     }catch(e){}
   }
   if(q!==$('#q').value)return;
-  box.innerHTML=hits.length?hits.slice(0,10).map(x=>'<button class="pick" data-act="addp" data-t="'+esc(x.t)+'"><b>'+esc(x.t)+'</b><span class="sub">'+esc(x.s.slice(0,90))+'</span></button>').join(''):'<p class="sub">Niente trovato.</p>';
+  const seen={};const wiki=hits.filter(x=>{const f=findCat(x.t)[0];if(f&&norm(x.t)===norm(CAT[f].sci||''))return false;if(seen[x.t])return false;seen[x.t]=1;return true;}).slice(0,10).map(x=>'<button class="pick" data-act="addp" data-t="'+esc(x.t)+'"><b>'+esc(x.t)+'</b><span class="sub">Senza scheda di cura. '+esc(x.s.slice(0,70))+'</span></button>').join('');
+  box.innerHTML=mine+wiki||'<p class="sub">Niente trovato.</p>';
 }
 
 function render(){
@@ -529,7 +548,8 @@ document.addEventListener('click',async e=>{
   if(a==='delok'&&p){S.plants=S.plants.filter(x=>x.id!==p.id);save();closeModal();location.hash='#/';return;}
   if(a==='pickphoto'&&p){photoId=p.id;$('#file').click();return;}
   if(a==='rmphoto'&&p){p.photo=null;save();rerender();return;}
-  if(a==='addp'){const t=b.dataset.t;S.next=(S.next||100)+1;S.plants.push({id:'p'+S.next,key:'custom',name:t,wiki:[t],outdoor:false,lastWater:null,lastFert:null,lastPrune:null,lastCheck:null,waterDays:null,growth:[],issues:[]});save();location.hash='#/p/p'+S.next+'/s';return;}
+  if(a==='addc'){const k=b.dataset.k;if(!CAT[k])return;S.next=(S.next||100)+1;const o=mk(k,0);o.id='p'+S.next;S.plants.push(o);save();location.hash='#/p/'+o.id+'/s';return;}
+  if(a==='addp'){const t=b.dataset.t;const f=findCat(t)[0];if(f&&norm(t)===norm(CAT[f].sci||'')){S.next=(S.next||100)+1;const o=mk(f,0);o.id='p'+S.next;S.plants.push(o);save();location.hash='#/p/'+o.id+'/s';return;}S.next=(S.next||100)+1;S.plants.push({id:'p'+S.next,key:'custom',name:t,wiki:[t],outdoor:false,lastWater:null,lastFert:null,lastPrune:null,lastCheck:null,waterDays:null,growth:[],issues:[]});save();location.hash='#/p/p'+S.next+'/s';return;}
 });
 document.addEventListener('change',e=>{
   const b=e.target;if(b.dataset&&b.dataset.act==='outdoor'){const p=S.plants.find(x=>x.id===b.dataset.id);if(p){p.outdoor=b.checked;save();}}
