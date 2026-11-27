@@ -443,15 +443,17 @@ function homeHTML(){
   const todo=list.length?'<div class="todo"><span class="lbl">DA FARE OGGI</span>'+list.map((t,i)=>(i?'<div class="sep"></div>':'')+'<div class="row" style="justify-content:space-between"><div style="min-width:0"><div style="font-weight:600;font-size:16px">'+esc(t.title)+'</div>'+(t.sub?'<div class="sub">'+esc(t.sub)+'</div>':'')+'</div><button class="btn w" data-act="done" data-id="'+t.id+'" data-kind="'+t.kind+'">Fatto</button></div>').join('')+'</div>':'<div class="card"><b>Oggi non c\'è niente da fare.</b></div>';
   const pl=S.plants.map(p=>{const st=statusOf(p),c=CAT[p.key];const sub=(c&&c.nome!==p.name?esc(cap(c.nome))+' · ':'')+esc(st.t);return '<div class="plant"><a class="main" href="#/p/'+p.id+'/s">'+ph(p,56)+'<div style="min-width:0"><div class="name">'+esc(cap(p.name))+'</div><div class="'+(st.due?'due':'sub')+'">'+sub+'</div></div></a><button class="ic" aria-label="Cambia nome" data-act="rename" data-id="'+p.id+'">'+PENCIL+'</button></div>';}).join('');
   const nb='Notification' in window&&Notification.permission==='granted'?'<span class="badge">Notifiche attive</span>':'<button class="btn l" data-act="notif">Attiva le notifiche</button>';
-  return '<h1>Le mie piante</h1>'+wx+al+todo+'<h2>Tutte le piante ('+S.plants.length+')</h2>'+(pl||'<div class="plant" style="padding:18px;display:block"><div class="name">Ancora nessuna pianta</div><div class="sub">Tocca "+ Aggiungi pianta" qui sotto e cerca la tua.</div></div>')+'<a class="btn y" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/add">+ Aggiungi pianta</a><div class="row" style="justify-content:center">'+nb+'</div><p class="foot">Meteo: Open-Meteo (CC BY 4.0). Foto: Wikipedia e Wikimedia Commons, oppure le tue. Altre piante: Perenual. Le notifiche arrivano quando apri l\'app.</p>';
+  return '<h1>Le mie piante</h1>'+wx+al+todo+'<h2>Tutte le piante ('+S.plants.length+')</h2>'+(pl||'<div class="plant" style="padding:18px;display:block"><div class="name">Ancora nessuna pianta</div><div class="sub">Tocca "+ Aggiungi pianta" qui sotto e cerca la tua.</div></div>')+'<a class="btn y" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/add">+ Aggiungi pianta</a><div class="row" style="justify-content:center">'+nb+'</div><p class="foot">Meteo: Open-Meteo (CC BY 4.0). Foto: Wikipedia e Wikimedia Commons, oppure le tue. Altre piante: Perenual e Trefle. Le notifiche arrivano quando apri l\'app.</p>';
 }
 function tabsHTML(id,on){return '<div class="tabs">'+[['s','Scheda'],['h','Salute'],['c','Crescita']].map(t=>'<a href="#/p/'+id+'/'+t[0]+'"'+(t[0]===on?' class="on"':'')+'>'+t[1]+'</a>').join('')+'</div>';}
-function headHTML(p,c){return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>'+ph(p,48)+'<div style="min-width:0"><div style="font-size:22px;font-weight:700">'+esc(cap(p.name))+'</div><div class="sub">'+(c?esc(c.sci):(p.px&&p.px.s?esc(p.px.s):'Dati di cura non disponibili'))+'</div></div></div>';}
+function headHTML(p,c){return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>'+ph(p,48)+'<div style="min-width:0"><div style="font-size:22px;font-weight:700">'+esc(cap(p.name))+'</div><div class="sub">'+(c?esc(c.sci):(p.px&&p.px.s?esc(p.px.s):(p.tr&&p.tr.s?esc(p.tr.s):'Dati di cura non disponibili')))+'</div></div></div>';}
 function r(l,v){return '<div class="card"><div class="lbl">'+l+'</div><div class="val">'+esc(v)+'</div></div>';}
 
 function schedaHTML(p,c){
   let h=headHTML(p,c)+tabsHTML(p.id,'s');
-  if(!c&&p.px){
+  if(!c&&p.tr){
+    h+=trHTML(p.tr);
+  }else if(!c&&p.px){
     h+=pxHTML(p.px);
   }else if(!c){
     h+='<div class="warn">Per questa pianta non ho dati di cura verificati, e non voglio inventarli. Puoi comunque impostare tu ogni quanti giorni annaffiarla.</div>';
@@ -564,6 +566,74 @@ function pxHTML(px){
   return h;
 }
 
+/* ================= TREFLE (database esterno) ================= */
+const TTOKEN="usr-awmj9Fr3hEcXEgKqEH0faFn9rXtKKE_bIqdh5GNMzIc";
+const TRM={jan:'gennaio',feb:'febbraio',mar:'marzo',apr:'aprile',may:'maggio',jun:'giugno',jul:'luglio',aug:'agosto',sep:'settembre',oct:'ottobre',nov:'novembre',dec:'dicembre'};
+const TRD={annual:'Annuale',biennial:'Biennale',perennial:'Perenne'};
+const TRT={none:'nessuna',low:'bassa',medium:'media',high:'alta'};
+async function trJwt(force){
+  let c=null;try{c=JSON.parse(localStorage.getItem('pp_trjwt'));}catch(e){}
+  if(!force&&c&&c.t&&(!c.e||Date.parse(c.e)>Date.now()+60000))return c.t;
+  const r=await fetch('https://trefle.io/api/auth/claim',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+TTOKEN},body:JSON.stringify({origin:location.origin})});
+  if(!r.ok)throw new Error('chiave Trefle: HTTP '+r.status);
+  const d=await r.json();if(!d.token)throw new Error('chiave Trefle non ricevuta');
+  try{localStorage.setItem('pp_trjwt',JSON.stringify({t:d.token,e:d.expiration||null}));}catch(e){}
+  return d.token;
+}
+async function trGet(path,params,retry){
+  const jwt=await trJwt(!!retry);
+  const u=new URL('https://trefle.io/api/v1/'+path);u.searchParams.set('token',jwt);
+  for(const k in(params||{}))u.searchParams.set(k,params[k]);
+  const r=await fetch(u.toString());
+  if((r.status===401||r.status===403)&&!retry)return trGet(path,params,true);
+  if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+}
+async function trSearch(q){
+  const box=$('#trres');if(!box)return;
+  box.innerHTML='<p class="sub">Cerco in Trefle...</p>';
+  try{
+    const j=await trGet('plants/search',{q:q});
+    const L=(j.data||[]).slice(0,10);
+    box.innerHTML=L.length?L.map(x=>'<button class="pick" data-act="addt" data-id="'+esc(x.id)+'" data-n="'+esc(x.common_name||x.scientific_name)+'" data-s="'+esc(x.scientific_name||'')+'"><b>'+esc(cap(x.common_name||x.scientific_name))+'</b><span class="sub">'+esc(x.scientific_name||'')+'</span></button>').join(''):'<p class="sub">Trefle non ha trovato niente.</p>';
+  }catch(e){
+    box.innerHTML='<p class="sub">Non riesco a collegarmi a Trefle ('+esc(e.message||'errore')+'). Può essere che il sito non permetta le richieste da un\'app web.</p>';
+  }
+}
+async function trDetails(id,sci,name){
+  const t={id:id,s:sci,n:name};
+  try{
+    const j=await trGet('plants/'+id,{});const d=j.data||{},ms=d.main_species||{},g=ms.growth||{},sp=ms.specifications||{};
+    t.fam=d.family_common_name||d.family||ms.family||null;
+    t.light=g.light;t.hum=g.ground_humidity;t.atm=g.atmospheric_humidity;t.nut=g.soil_nutriments;
+    t.tmin=g.minimum_temperature&&g.minimum_temperature.deg_c;
+    t.phmin=g.ph_minimum;t.phmax=g.ph_maximum;
+    t.gm=g.growth_months||null;t.bm=g.bloom_months||null;
+    t.dur=ms.duration||null;t.tox=sp.toxicity||null;t.edible=ms.edible;
+  }catch(e){t.err=String(e.message||e);}
+  return t;
+}
+function trMonths(a){return (a||[]).map(x=>TRM[String(x).toLowerCase().slice(0,3)]||x).join(', ');}
+function trHTML(t){
+  let h='<div class="badge o" style="align-self:flex-start">Dati dal database Trefle: non controllati da me</div>';
+  const n=v=>v!=null&&v!=='';
+  const rows=[];
+  if(n(t.light))rows.push(['Luce',t.light+' su 10 (0 = buio, 10 = luce molto forte)']);
+  if(n(t.hum))rows.push(['Umidità del terreno',t.hum+' su 10 (0 = molto secco, 10 = sommerso)']);
+  if(n(t.atm))rows.push(['Umidità dell\'aria',t.atm+' su 10 (0 = molto secca, 10 = molto umida)']);
+  if(n(t.nut))rows.push(['Nutrienti nel terreno',t.nut+' su 10 (0 = povero, 10 = molto ricco)']);
+  if(n(t.phmin)||n(t.phmax))rows.push(['pH del terreno','da '+(n(t.phmin)?t.phmin:'?')+' a '+(n(t.phmax)?t.phmax:'?')]);
+  if(n(t.tmin))rows.push(['Temperatura minima',t.tmin+' °C (secondo Trefle)']);
+  if(t.gm&&t.gm.length)rows.push(['Mesi di crescita',trMonths(t.gm)]);
+  if(t.bm&&t.bm.length)rows.push(['Mesi di fioritura',trMonths(t.bm)]);
+  if(n(t.dur)){const d=Array.isArray(t.dur)?t.dur:[t.dur];rows.push(['Durata',d.map(x=>TRD[String(x).toLowerCase()]||x).join(', ')]);}
+  if(n(t.fam))rows.push(['Famiglia',t.fam]);
+  if(!rows.length&&t.edible==null&&!t.tox){h+='<div class="warn">'+(t.err?'Non sono riuscito a leggere i dati di questa pianta ('+esc(t.err)+').':'Trefle non ha dati di cura per questa pianta. Puoi impostare tu ogni quanti giorni annaffiarla.')+'</div>';return h;}
+  h+=rows.map(x=>r(x[0],x[1])).join('');
+  if(t.tox)h+='<div class="warn"><b>Tossicità (secondo Trefle):</b> '+esc(TRT[String(t.tox).toLowerCase()]||t.tox)+'.</div>';
+  if(t.edible!=null)h+=r('Commestibile',t.edible?'Sì, qualche parte (controlla quale prima di mangiarla)':'No');
+  return h;
+}
+
 async function searchPlants(q){
   const box=$('#res');if(q.trim().length<2){return;}
   const mine=findCat(q).slice(0,8).map(k=>'<button class="pick" data-act="addc" data-k="'+esc(k)+'"><b>'+esc(cap(CAT[k].nome))+'</b><span class="sub">Con scheda di cura'+(CAT[k].verificata?' controllata':' generale (da verificare)')+'</span></button>').join('');
@@ -577,7 +647,7 @@ async function searchPlants(q){
   }
   if(q!==$('#q').value)return;
   const seen={};const wiki=hits.filter(x=>{const f=findCat(x.t)[0];if(f&&norm(x.t)===norm(CAT[f].sci||''))return false;if(seen[x.t])return false;seen[x.t]=1;return true;}).slice(0,10).map(x=>'<button class="pick" data-act="addp" data-t="'+esc(x.t)+'"><b>'+esc(x.t)+'</b><span class="sub">Senza scheda di cura. '+esc(x.s.slice(0,70))+'</span></button>').join('');
-  box.innerHTML=(mine+wiki||'<p class="sub">Niente trovato.</p>')+'<button class="btn l" style="margin-top:10px" data-act="pxsearch">Cerca anche in Perenual (database grande)</button><div id="pxres"></div>';
+  box.innerHTML=(mine+wiki||'<p class="sub">Niente trovato.</p>')+'<button class="btn l" style="margin-top:10px" data-act="pxsearch">Cerca anche in Perenual (database grande)</button><div id="pxres"></div>'+'<button class="btn l" style="margin-top:10px" data-act="trsearch">Cerca anche in Trefle (database grande)</button><div id="trres"></div>';
 }
 
 function render(){
@@ -611,6 +681,15 @@ document.addEventListener('click',async e=>{
   if(a==='delok'&&p){S.plants=S.plants.filter(x=>x.id!==p.id);save();closeModal();location.hash='#/';return;}
   if(a==='pickphoto'&&p){photoId=p.id;$('#file').click();return;}
   if(a==='rmphoto'&&p){p.photo=null;save();rerender();return;}
+  if(a==='trsearch'){trSearch(($('#q').value||'').trim());return;}
+  if(a==='addt'){
+    const id=b.dataset.id,n=b.dataset.n,sci=b.dataset.s;
+    b.disabled=true;b.querySelector('.sub').textContent='Leggo i dati...';
+    const tr=await trDetails(id,sci,n);
+    S.next=(S.next||100)+1;
+    const o={id:'p'+S.next,key:'custom',name:n,wiki:[sci||n],outdoor:false,lastWater:todayStr(),lastFert:null,lastPrune:null,lastCheck:null,waterDays:null,growth:[],issues:[],tr:tr};
+    S.plants.push(o);save();location.hash='#/p/'+o.id+'/s';return;
+  }
   if(a==='pxsearch'){pxSearch(($('#q').value||'').trim());return;}
   if(a==='addx'){
     const id=b.dataset.id,n=b.dataset.n,sci=b.dataset.s;
