@@ -443,15 +443,17 @@ function homeHTML(){
   const todo=list.length?'<div class="todo"><span class="lbl">DA FARE OGGI</span>'+list.map((t,i)=>(i?'<div class="sep"></div>':'')+'<div class="row" style="justify-content:space-between"><div style="min-width:0"><div style="font-weight:600;font-size:16px">'+esc(t.title)+'</div>'+(t.sub?'<div class="sub">'+esc(t.sub)+'</div>':'')+'</div><button class="btn w" data-act="done" data-id="'+t.id+'" data-kind="'+t.kind+'">Fatto</button></div>').join('')+'</div>':'<div class="card"><b>Oggi non c\'è niente da fare.</b></div>';
   const pl=S.plants.map(p=>{const st=statusOf(p),c=CAT[p.key];const sub=(c&&c.nome!==p.name?esc(cap(c.nome))+' · ':'')+esc(st.t);return '<div class="plant"><a class="main" href="#/p/'+p.id+'/s">'+ph(p,56)+'<div style="min-width:0"><div class="name">'+esc(cap(p.name))+'</div><div class="'+(st.due?'due':'sub')+'">'+sub+'</div></div></a><button class="ic" aria-label="Cambia nome" data-act="rename" data-id="'+p.id+'">'+PENCIL+'</button></div>';}).join('');
   const nb='Notification' in window&&Notification.permission==='granted'?'<span class="badge">Notifiche attive</span>':'<button class="btn l" data-act="notif">Attiva le notifiche</button>';
-  return '<h1>Le mie piante</h1>'+wx+al+todo+'<h2>Tutte le piante ('+S.plants.length+')</h2>'+(pl||'<div class="plant" style="padding:18px;display:block"><div class="name">Ancora nessuna pianta</div><div class="sub">Tocca "+ Aggiungi pianta" qui sotto e cerca la tua.</div></div>')+'<a class="btn y" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/add">+ Aggiungi pianta</a><div class="row" style="justify-content:center">'+nb+'</div><p class="foot">Meteo: Open-Meteo (CC BY 4.0). Foto: Wikipedia e Wikimedia Commons, oppure le tue. Le notifiche arrivano quando apri l\'app.</p>';
+  return '<h1>Le mie piante</h1>'+wx+al+todo+'<h2>Tutte le piante ('+S.plants.length+')</h2>'+(pl||'<div class="plant" style="padding:18px;display:block"><div class="name">Ancora nessuna pianta</div><div class="sub">Tocca "+ Aggiungi pianta" qui sotto e cerca la tua.</div></div>')+'<a class="btn y" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/add">+ Aggiungi pianta</a><div class="row" style="justify-content:center">'+nb+'</div><p class="foot">Meteo: Open-Meteo (CC BY 4.0). Foto: Wikipedia e Wikimedia Commons, oppure le tue. Altre piante: Perenual. Le notifiche arrivano quando apri l\'app.</p>';
 }
 function tabsHTML(id,on){return '<div class="tabs">'+[['s','Scheda'],['h','Salute'],['c','Crescita']].map(t=>'<a href="#/p/'+id+'/'+t[0]+'"'+(t[0]===on?' class="on"':'')+'>'+t[1]+'</a>').join('')+'</div>';}
-function headHTML(p,c){return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>'+ph(p,48)+'<div style="min-width:0"><div style="font-size:22px;font-weight:700">'+esc(cap(p.name))+'</div><div class="sub">'+(c?esc(c.sci):'Dati di cura non disponibili')+'</div></div></div>';}
+function headHTML(p,c){return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>'+ph(p,48)+'<div style="min-width:0"><div style="font-size:22px;font-weight:700">'+esc(cap(p.name))+'</div><div class="sub">'+(c?esc(c.sci):(p.px&&p.px.s?esc(p.px.s):'Dati di cura non disponibili'))+'</div></div></div>';}
 function r(l,v){return '<div class="card"><div class="lbl">'+l+'</div><div class="val">'+esc(v)+'</div></div>';}
 
 function schedaHTML(p,c){
   let h=headHTML(p,c)+tabsHTML(p.id,'s');
-  if(!c){
+  if(!c&&p.px){
+    h+=pxHTML(p.px);
+  }else if(!c){
     h+='<div class="warn">Per questa pianta non ho dati di cura verificati, e non voglio inventarli. Puoi comunque impostare tu ogni quanti giorni annaffiarla.</div>';
   }else{
     h+='<div class="'+(c.verificata?'badge':'badge o')+'" style="align-self:flex-start">'+(c.verificata?'Dati controllati su fonti':'Dati generali: da verificare')+'</div>';
@@ -501,6 +503,67 @@ function crescitaHTML(p,c){
 function addHTML(){
   return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a><h1 style="font-size:24px">Aggiungi pianta</h1></div><input type="search" id="q" placeholder="Nome della pianta (italiano, inglese, latino)"><div id="res" style="display:flex;flex-direction:column;gap:8px"><p class="sub">Cerco nei nomi di Wikipedia. Le piante nuove hanno nome e foto, ma i dati di cura non ci sono finché non li verifichiamo.</p></div>';
 }
+/* ================= PERENUAL (database esterno) ================= */
+const PKEY="sk-SdDE6b098135cdd0520873";
+const PXM={january:'gennaio',february:'febbraio',march:'marzo',april:'aprile',may:'maggio',june:'giugno',july:'luglio',august:'agosto',september:'settembre',october:'ottobre',november:'novembre',december:'dicembre'};
+const PXW={frequent:'Spesso',average:'Normale',minimum:'Poco',none:'Quasi mai'};
+const PXS={full_shade:'ombra piena',part_shade:'mezz\'ombra','sun-part_shade':'sole e mezz\'ombra',part_sun:'sole e mezz\'ombra',full_sun:'sole pieno'};
+const PXC={perennial:'Perenne',annual:'Annuale',biennial:'Biennale',biannual:'Biennale'};
+const okv=v=>v!=null&&v!==''&&!(typeof v==='string'&&/upgrade|sorry/i.test(v));
+async function pxGet(path,params){
+  const u=new URL('https://perenual.com/api/'+path);u.searchParams.set('key',PKEY);
+  for(const k in(params||{}))u.searchParams.set(k,params[k]);
+  const r=await fetch(u.toString());if(!r.ok)throw new Error('HTTP '+r.status);return r.json();
+}
+async function pxSearch(q){
+  const box=$('#pxres');if(!box)return;
+  box.innerHTML='<p class="sub">Cerco in Perenual...</p>';
+  try{
+    const j=await pxGet('species-list',{q:q});
+    const L=(j.data||[]).slice(0,10);
+    box.innerHTML=L.length?L.map(x=>{
+      const sci=Array.isArray(x.scientific_name)?x.scientific_name[0]:(x.scientific_name||'');
+      return '<button class="pick" data-act="addx" data-id="'+esc(x.id)+'" data-n="'+esc(x.common_name||sci)+'" data-s="'+esc(sci)+'"><b>'+esc(cap(x.common_name||sci))+'</b><span class="sub">'+esc(sci)+'</span></button>';
+    }).join(''):'<p class="sub">Perenual non ha trovato niente.</p>';
+  }catch(e){
+    box.innerHTML='<p class="sub">Non riesco a collegarmi a Perenual ('+esc(e.message||'errore')+'). Può essere che il sito non permetta le richieste da un\'app web, o che le 100 richieste di oggi siano finite.</p>';
+  }
+}
+async function pxDetails(id,sci,name){
+  const px={id:id,s:sci,n:name};
+  try{
+    const d=await pxGet('species/details/'+id,{});
+    px.w=okv(d.watering)?String(d.watering).toLowerCase():null;
+    const wb=d.watering_general_benchmark;
+    if(wb&&okv(wb.value)){px.wb=String(wb.value).replace(/"/g,'')+' '+(okv(wb.unit)?wb.unit:'');}
+    px.sun=Array.isArray(d.sunlight)?d.sunlight.filter(okv).map(x=>String(x).toLowerCase()):[];
+    px.cy=okv(d.cycle)?String(d.cycle).toLowerCase():null;
+    px.pm=Array.isArray(d.pruning_month)?d.pruning_month.filter(okv).map(x=>String(x).toLowerCase()):[];
+    px.th=okv(d.poisonous_to_humans)?!!d.poisonous_to_humans:null;
+    px.tp=okv(d.poisonous_to_pets)?!!d.poisonous_to_pets:null;
+    px.desc=okv(d.description)?String(d.description):null;
+  }catch(e){px.err=String(e.message||e);}
+  try{
+    const g=await pxGet('species-care-guide-list',{species_id:id});
+    const sec=(g.data&&g.data[0]&&g.data[0].section)||[];
+    px.g=sec.filter(x=>okv(x.description)).map(x=>({t:x.type,d:x.description}));
+  }catch(e){}
+  return px;
+}
+function pxHTML(px){
+  let h='<div class="badge o" style="align-self:flex-start">Dati dal database Perenual: non controllati da me</div>';
+  const has=px.w||px.wb||(px.sun&&px.sun.length)||px.cy||(px.pm&&px.pm.length)||px.desc||(px.g&&px.g.length);
+  if(!has){h+='<div class="warn">'+(px.err?'Non sono riuscito a leggere i dati di questa pianta ('+esc(px.err)+').':'Col piano gratis Perenual non dà i dati di cura di questa pianta (valgono solo per le prime 3000). Puoi impostare tu ogni quanti giorni annaffiarla.')+'</div>';return h;}
+  if(px.sun&&px.sun.length)h+=r('Dove sta meglio',px.sun.map(x=>PXS[x]||x).join(', '));
+  if(px.w||px.wb)h+=r('Acqua',(px.w?(PXW[px.w]||px.w):'')+(px.wb?(px.w?'. ':'')+'Perenual consiglia circa ogni '+px.wb.replace('days','giorni').replace('day','giorno').trim():''));
+  if(px.cy)h+=r('Tipo',PXC[px.cy]||px.cy);
+  if(px.pm&&px.pm.length)h+=r('Potatura',"Mesi indicati: "+px.pm.map(x=>PXM[x]||x).join(', ')+'.');
+  if(px.th!=null||px.tp!=null){const t=[];if(px.th!=null)t.push(px.th?'tossica per le persone':'non indicata come tossica per le persone');if(px.tp!=null)t.push(px.tp?'tossica per cani e gatti':'non indicata come tossica per cani e gatti');h+='<div class="warn"><b>Tossicità (secondo Perenual):</b> '+t.join('; ')+'.</div>';}
+  if(px.g&&px.g.length)h+=px.g.map(x=>'<div class="card"><div class="lbl">'+esc(String(x.t).toUpperCase())+' (in inglese)</div><div class="val">'+esc(x.d)+'</div></div>').join('');
+  else if(px.desc)h+='<div class="card"><div class="lbl">DESCRIZIONE (in inglese)</div><div class="val">'+esc(px.desc)+'</div></div>';
+  return h;
+}
+
 async function searchPlants(q){
   const box=$('#res');if(q.trim().length<2){return;}
   const mine=findCat(q).slice(0,8).map(k=>'<button class="pick" data-act="addc" data-k="'+esc(k)+'"><b>'+esc(cap(CAT[k].nome))+'</b><span class="sub">Con scheda di cura'+(CAT[k].verificata?' controllata':' generale (da verificare)')+'</span></button>').join('');
@@ -514,7 +577,7 @@ async function searchPlants(q){
   }
   if(q!==$('#q').value)return;
   const seen={};const wiki=hits.filter(x=>{const f=findCat(x.t)[0];if(f&&norm(x.t)===norm(CAT[f].sci||''))return false;if(seen[x.t])return false;seen[x.t]=1;return true;}).slice(0,10).map(x=>'<button class="pick" data-act="addp" data-t="'+esc(x.t)+'"><b>'+esc(x.t)+'</b><span class="sub">Senza scheda di cura. '+esc(x.s.slice(0,70))+'</span></button>').join('');
-  box.innerHTML=mine+wiki||'<p class="sub">Niente trovato.</p>';
+  box.innerHTML=(mine+wiki||'<p class="sub">Niente trovato.</p>')+'<button class="btn l" style="margin-top:10px" data-act="pxsearch">Cerca anche in Perenual (database grande)</button><div id="pxres"></div>';
 }
 
 function render(){
@@ -548,6 +611,17 @@ document.addEventListener('click',async e=>{
   if(a==='delok'&&p){S.plants=S.plants.filter(x=>x.id!==p.id);save();closeModal();location.hash='#/';return;}
   if(a==='pickphoto'&&p){photoId=p.id;$('#file').click();return;}
   if(a==='rmphoto'&&p){p.photo=null;save();rerender();return;}
+  if(a==='pxsearch'){pxSearch(($('#q').value||'').trim());return;}
+  if(a==='addx'){
+    const id=b.dataset.id,n=b.dataset.n,sci=b.dataset.s;
+    b.disabled=true;b.querySelector('.sub').textContent='Leggo i dati...';
+    const px=await pxDetails(id,sci,n);
+    S.next=(S.next||100)+1;
+    const o={id:'p'+S.next,key:'custom',name:n,wiki:[sci||n],outdoor:false,lastWater:todayStr(),lastFert:null,lastPrune:null,lastCheck:null,waterDays:null,growth:[],issues:[],px:px};
+    const m=px.wb&&String(px.wb).match(/(\d+)\s*-\s*(\d+)/);const m1=!m&&px.wb&&String(px.wb).match(/(\d+)/);
+    if(m&&/day/i.test(px.wb))o.waterDays=Math.round((+m[1]+ +m[2])/2);else if(m1&&/day/i.test(px.wb))o.waterDays=+m1[1];
+    S.plants.push(o);save();location.hash='#/p/'+o.id+'/s';return;
+  }
   if(a==='addc'){const k=b.dataset.k;if(!CAT[k])return;S.next=(S.next||100)+1;const o=mk(k,0);o.id='p'+S.next;S.plants.push(o);save();location.hash='#/p/'+o.id+'/s';return;}
   if(a==='addp'){const t=b.dataset.t;const f=findCat(t)[0];if(f&&norm(t)===norm(CAT[f].sci||'')){S.next=(S.next||100)+1;const o=mk(f,0);o.id='p'+S.next;S.plants.push(o);save();location.hash='#/p/'+o.id+'/s';return;}S.next=(S.next||100)+1;S.plants.push({id:'p'+S.next,key:'custom',name:t,wiki:[t],outdoor:false,lastWater:null,lastFert:null,lastPrune:null,lastCheck:null,waterDays:null,growth:[],issues:[]});save();location.hash='#/p/p'+S.next+'/s';return;}
 });
