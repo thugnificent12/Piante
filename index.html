@@ -54,16 +54,19 @@ input[type=text],input[type=number],input[type=search],select{width:100%;min-hei
 .foot{font-size:12px;color:#5B6358;line-height:1.5}
 .tg{display:flex;align-items:center;gap:10px;min-height:44px}
 .tg input{width:22px;height:22px}
-#splash{position:fixed;inset:0;z-index:200;background:#2a1233;display:none;align-items:center;justify-content:center}
+#splash{position:fixed;inset:0;z-index:200;background:#2a1a9a;display:none;align-items:flex-end;justify-content:center;overflow:hidden}
 #splash.on{display:flex}
-#splash .bg{position:absolute;inset:-4%;width:108%;height:108%;object-fit:cover;filter:blur(14px) brightness(.8);pointer-events:none}
-#splash .box{position:relative;width:min(100vw,calc(100dvh*843/1864));aspect-ratio:843/1864}
+#splash .box{position:relative;flex:none;width:100vw;aspect-ratio:843/1864}
+#splash .box.s{display:none;width:max(100vw,calc(100dvh*941/1672));aspect-ratio:941/1672}
 #splash img{width:100%;height:100%;display:block;-webkit-user-drag:none;user-select:none}
 #splash button{position:absolute;left:6%;top:58%;width:88%;height:22%;background:transparent;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#splash .s button{left:8%;top:61%;width:86%;height:25%}
+@media (min-aspect-ratio:53/100){#splash .box.t{display:none}#splash .box.s{display:block}}
+@media (min-aspect-ratio:60/100){#splash .box.s{width:calc(100dvh*941/1672)}}
 </style>
 </head>
 <body>
-<div id="splash"><img class="bg" src="splash.jpg" alt=""><div class="box"><img src="splash.jpg" alt="My Grass is Always Greener Than Yours!"><button data-act="enter" aria-label="Entra nelle piante"></button></div></div>
+<div id="splash"><div class="box t"><img src="splash.jpg" alt="My Grass is Always Greener Than Yours!"><button data-act="enter" aria-label="Entra nelle piante"></button></div><div class="box s"><img src="splash916.jpg" alt="My Grass is Always Greener Than Yours!"><button data-act="enter" aria-label="Entra nelle piante"></button></div></div>
 <div id="app"></div>
 <input type="file" accept="image/*" id="file" hidden>
 <div id="modal"><div id="sheet"></div></div>
