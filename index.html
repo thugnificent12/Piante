@@ -58,6 +58,7 @@ input[type=text],input[type=number],input[type=search],select{width:100%;min-hei
 </head>
 <body>
 <div id="app"></div>
+<input type="file" accept="image/*" id="file" hidden>
 <div id="modal"><div id="sheet"></div></div>
 <script>
 'use strict';
@@ -108,12 +109,12 @@ const MINT={
 };
 const CAT={
  'basilico':{...BASIL,nome:'Basilico'},
- 'basilico-thai':{...BASIL,nome:'Basilico thai',nota:'Varietà di basilico: valgono le cure del basilico.'},
- 'basilico-liquirizia':{...BASIL,nome:'Basilico liquirizia',nota:'Varietà di basilico: valgono le cure del basilico.'},
- 'basilico-vaniglia':{...BASIL,nome:'Basilico vaniglia',nota:'Varietà di basilico: valgono le cure del basilico.'},
- 'menta-arancio':{...MINT,nome:'Menta arancio',nota:'Varietà di menta: valgono le cure della menta.'},
- 'menta-cioccolato':{...MINT,nome:'Menta cioccolato',nota:'Varietà di menta: valgono le cure della menta.'},
- 'menta-sweet-lemon':{...MINT,nome:'Menta sweet lemon',nota:'Varietà di menta: valgono le cure della menta.'},
+ 'basilico-thai':{...BASIL,nome:'Basilico thai',foto:{q:'Thai basil',must:[['thai'],['basil']]},nota:'Varietà di basilico: valgono le cure del basilico.'},
+ 'basilico-liquirizia':{...BASIL,nome:'Basilico liquirizia',foto:{q:'Licorice basil',must:[['licorice','liquorice'],['basil']]},nota:'Varietà di basilico: valgono le cure del basilico.'},
+ 'basilico-vaniglia':{...BASIL,nome:'Basilico vaniglia',foto:{q:'Vanilla basil',must:[['vanilla'],['basil']]},nota:'Varietà di basilico: valgono le cure del basilico.'},
+ 'menta-arancio':{...MINT,nome:'Menta arancio',foto:{q:'Orange mint',must:[['orange'],['mint']]},nota:'Varietà di menta: valgono le cure della menta.'},
+ 'menta-cioccolato':{...MINT,nome:'Menta cioccolato',foto:{q:'Chocolate mint',must:[['chocolate'],['mint']]},nota:'Varietà di menta: valgono le cure della menta.'},
+ 'menta-sweet-lemon':{...MINT,nome:'Menta sweet lemon',foto:{q:'Sweet lemon mint',must:[['sweet'],['lemon'],['mint']]},nota:'Varietà di menta: valgono le cure della menta.'},
  'monstera':{
   nome:'Monstera deliciosa',sci:'Monstera deliciosa',wiki:['Monstera deliciosa'],outdoor:false,verificata:false,fonti:[],
   luce:'Luce forte ma non diretta. Il sole diretto brucia le foglie.',
@@ -354,15 +355,40 @@ async function photoFor(titles){
   }
   return null;
 }
+async function commonsPhoto(f){
+  const k='cimg:'+f.q,v=localStorage.getItem(k);
+  if(v==='none')return null;if(v)return JSON.parse(v);
+  try{
+    const u='https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrlimit=12&gsrsearch='+encodeURIComponent(f.q)+'&prop=imageinfo&iiprop=url|mime&iiurlwidth=400&format=json&origin=*';
+    const r=await fetch(u);if(!r.ok)throw 0;const j=await r.json();
+    const pages=Object.values((j.query&&j.query.pages)||{}).sort((a,b)=>a.index-b.index);
+    for(const pg of pages){
+      const t=(pg.title||'').toLowerCase(),ii=pg.imageinfo&&pg.imageinfo[0];
+      if(!ii||!/jpeg|png/.test(ii.mime||''))continue;
+      if(f.must.every(g=>g.some(w=>t.includes(w)))){const res={u:ii.thumburl||ii.url};try{localStorage.setItem(k,JSON.stringify(res));}catch(e){}return res;}
+    }
+    try{localStorage.setItem(k,'none');}catch(e){}
+    return null;
+  }catch(e){return null;}
+}
 function hydrate(){
-  document.querySelectorAll('[data-ph]').forEach(async el=>{
+  document.querySelectorAll('[data-ph],[data-foto]').forEach(async el=>{
     if(el.dataset.done)return;el.dataset.done='1';
-    let t;try{t=JSON.parse(el.dataset.ph);}catch(e){return;}
-    const u=await photoFor(t);
+    let u=null;
+    try{
+      if(el.dataset.foto){const r=await commonsPhoto(JSON.parse(el.dataset.foto));u=r&&r.u;}
+      else u=await photoFor(JSON.parse(el.dataset.ph));
+    }catch(e){}
     if(u&&el.isConnected){el.style.backgroundImage='url("'+u+'")';el.classList.add('has');}
   });
 }
-const ph=(p,s)=>'<div class="ph" style="width:'+s+'px;height:'+s+'px" data-ph="'+esc(JSON.stringify(p.wiki&&p.wiki.length?p.wiki:[p.name]))+'">'+LEAF+'</div>';
+function shrink(file,max){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',0.82));};img.onerror=rej;img.src=u;});}
+function ph(p,s){
+  const st='width:'+s+'px;height:'+s+'px',c=CAT[p.key];
+  if(p.photo)return '<div class="ph has" style="'+st+";background-image:url('"+p.photo+"')"+'">'+LEAF+'</div>';
+  if(c&&c.foto)return '<div class="ph" style="'+st+'" data-foto="'+esc(JSON.stringify(c.foto))+'">'+LEAF+'</div>';
+  return '<div class="ph" style="'+st+'" data-ph="'+esc(JSON.stringify(p.wiki&&p.wiki.length?p.wiki:[p.name]))+'">'+LEAF+'</div>';
+}
 
 /* ================= NOTIFICHE ================= */
 async function notifyToday(force){
@@ -398,7 +424,7 @@ function homeHTML(){
   const todo=list.length?'<div class="todo"><span class="lbl">DA FARE OGGI</span>'+list.map((t,i)=>(i?'<div class="sep"></div>':'')+'<div class="row" style="justify-content:space-between"><div style="min-width:0"><div style="font-weight:600;font-size:16px">'+esc(t.title)+'</div>'+(t.sub?'<div class="sub">'+esc(t.sub)+'</div>':'')+'</div><button class="btn w" data-act="done" data-id="'+t.id+'" data-kind="'+t.kind+'">Fatto</button></div>').join('')+'</div>':'<div class="card"><b>Oggi non c\'è niente da fare.</b></div>';
   const pl=S.plants.map(p=>{const st=statusOf(p),c=CAT[p.key];const sub=(c&&c.nome!==p.name?esc(c.nome)+' · ':'')+esc(st.t);return '<div class="plant"><a class="main" href="#/p/'+p.id+'/s">'+ph(p,56)+'<div style="min-width:0"><div class="name">'+esc(p.name)+'</div><div class="'+(st.due?'due':'sub')+'">'+sub+'</div></div></a><button class="ic" aria-label="Cambia nome" data-act="rename" data-id="'+p.id+'">'+PENCIL+'</button></div>';}).join('');
   const nb='Notification' in window&&Notification.permission==='granted'?'<span class="badge">Notifiche attive</span>':'<button class="btn l" data-act="notif">Attiva le notifiche</button>';
-  return '<h1>Le mie piante</h1>'+wx+al+todo+'<h2>Tutte le piante ('+S.plants.length+')</h2>'+pl+'<a class="btn y" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/add">+ Aggiungi pianta</a><div class="row" style="justify-content:center">'+nb+'</div><p class="foot">Meteo: Open-Meteo (CC BY 4.0). Foto: Wikipedia. Le notifiche arrivano quando apri l\'app.</p>';
+  return '<h1>Le mie piante</h1>'+wx+al+todo+'<h2>Tutte le piante ('+S.plants.length+')</h2>'+pl+'<a class="btn y" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/add">+ Aggiungi pianta</a><div class="row" style="justify-content:center">'+nb+'</div><p class="foot">Meteo: Open-Meteo (CC BY 4.0). Foto: Wikipedia e Wikimedia Commons, oppure le tue. Le notifiche arrivano quando apri l\'app.</p>';
 }
 function tabsHTML(id,on){return '<div class="tabs">'+[['s','Scheda'],['h','Salute'],['c','Crescita']].map(t=>'<a href="#/p/'+id+'/'+t[0]+'"'+(t[0]===on?' class="on"':'')+'>'+t[1]+'</a>').join('')+'</div>';}
 function headHTML(p,c){return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>'+ph(p,48)+'<div style="min-width:0"><div style="font-size:22px;font-weight:700">'+esc(p.name)+'</div><div class="sub">'+(c?esc(c.sci):'Dati di cura non disponibili')+'</div></div></div>';}
@@ -422,7 +448,7 @@ function schedaHTML(p,c){
    +'<div class="row"><input type="number" min="1" max="90" id="wd" placeholder="'+(wi?'automatico: '+wi:'imposta')+'" value="'+(p.waterDays||'')+'"><button class="btn l" data-act="setwater" data-id="'+p.id+'">Salva</button></div>'
    +'<div class="sub" style="margin-top:6px">Vuoto = uso i giorni della scheda, secondo la stagione.</div></div>';
   h+='<div class="card"><div class="lbl">Ultime volte</div><div class="val">Annaffiata: '+fmtAgo(p.lastWater)+'<br>Concimata: '+fmtAgo(p.lastFert)+'<br>Potata: '+fmtAgo(p.lastPrune)+'</div><div class="row" style="flex-wrap:wrap;margin-top:8px"><button class="btn l" data-act="done" data-id="'+p.id+'" data-kind="acqua">Annaffiata oggi</button><button class="btn l" data-act="done" data-id="'+p.id+'" data-kind="concime">Concimata oggi</button><button class="btn l" data-act="done" data-id="'+p.id+'" data-kind="potatura">Potata oggi</button></div></div>';
-  h+='<div class="row"><button class="btn l" data-act="rename" data-id="'+p.id+'">Cambia nome</button><button class="btn r" data-act="del" data-id="'+p.id+'">Elimina</button></div>';
+  h+='<div class="row" style="flex-wrap:wrap"><button class="btn l" data-act="rename" data-id="'+p.id+'">Cambia nome</button><button class="btn l" data-act="pickphoto" data-id="'+p.id+'">Cambia foto</button>'+(p.photo?'<button class="btn l" data-act="rmphoto" data-id="'+p.id+'">Togli la mia foto</button>':'')+'<button class="btn r" data-act="del" data-id="'+p.id+'">Elimina</button></div>';
   return h;
 }
 function saluteHTML(p,c){
@@ -498,12 +524,15 @@ document.addEventListener('click',async e=>{
   if(a==='resolve'&&p){p.issues[+b.dataset.k].done=true;save();rerender();return;}
   if(a==='del'&&p){openModal('<h2 style="margin:0">Eliminare '+esc(p.name)+'?</h2><div class="row"><button class="btn r" data-act="delok" data-id="'+p.id+'">Sì, elimina</button><button class="btn l" data-act="close">No</button></div>');return;}
   if(a==='delok'&&p){S.plants=S.plants.filter(x=>x.id!==p.id);save();closeModal();location.hash='#/';return;}
+  if(a==='pickphoto'&&p){photoId=p.id;$('#file').click();return;}
+  if(a==='rmphoto'&&p){p.photo=null;save();rerender();return;}
   if(a==='addp'){const t=b.dataset.t;S.next=(S.next||100)+1;S.plants.push({id:'p'+S.next,key:'custom',name:t,wiki:[t],outdoor:false,lastWater:null,lastFert:null,lastPrune:null,lastCheck:null,waterDays:null,growth:[],issues:[]});save();location.hash='#/p/p'+S.next+'/s';return;}
 });
 document.addEventListener('change',e=>{
   const b=e.target;if(b.dataset&&b.dataset.act==='outdoor'){const p=S.plants.find(x=>x.id===b.dataset.id);if(p){p.outdoor=b.checked;save();}}
 });
-let tmr=null;
+let tmr=null,photoId=null;
+$('#file').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';const p=S.plants.find(x=>x.id===photoId);if(!f||!p)return;try{p.photo=await shrink(f,360);save();rerender();}catch(err){toast('Non riesco a leggere la foto.');}});
 document.addEventListener('input',e=>{
   if(e.target.id==='city'){clearTimeout(tmr);const v=e.target.value;tmr=setTimeout(()=>searchCity(v),350);}
   if(e.target.id==='q'){clearTimeout(tmr);const v=e.target.value;tmr=setTimeout(()=>searchPlants(v),400);}
