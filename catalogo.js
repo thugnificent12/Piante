@@ -395,6 +395,18 @@ const L=[
  ['Pitosforo',['pittosporum tobira','pitosforo','pittosporo','japanese cheesewood'],'Pittosporum tobira','arbusto',6,21,-8,1,null,{tipo:'Sempreverde. Fiorisce in primavera con profumo.'}]
 ];
 
+const POTA_T={verde:'nodo',ombra:'nodo',umida:'secche',grassa:'nopota',cactus:'nopota',felce:'secche',med:'legno',erba:'cima',agrume:'nodo',orto:'secche',fiore:'fiori',arbusto:'nodo',bulbo:'bulbo',palma:'secche',carn:'secche'};
+/* eccezioni per nome */
+const POTA_O={
+ 'Zamioculcas':'secche','Aspidistra':'secche','Aglaonema':'secche','Yucca':'secche','Falangio':'secche','Calathea':'secche','Maranta':'secche','Spatifillo':'secche','Fittonia':'nodo','Alocasia':'secche','Anthurium':'secche','Clivia':'secche','Cyperus':'secche',
+ 'Aloe vera':'secche','Echeveria':'secche','Haworthia':'secche','Gasteria':'secche','Semprevivo':'secche','Agave':'secche','Beaucarnea':'secche',
+ 'Albero di giada':'nodo','Portulacaria':'nodo','Aeonium':'nodo','Corona di spine':'nodo','Hoya':'nodo','Ceropegia':'nodo','Rosario':'nodo','Coda d\'asino':'nodo','Kalanchoe':'fiori',
+ 'Cactus di Natale':'ruota','Rhipsalis':'ruota','Ciclamino':'secche','Stella di Natale':'nodo','Begonia':'fiori',
+ 'Erba cipollina':'ciuffo','Prezzemolo':'ciuffo','Coriandolo':'ciuffo','Aneto':'ciuffo','Citronella':'ciuffo','Agapanto':'secche','Bambù':'secche','Mirtillo':'nodo','Fragola':'secche',
+ 'Pomodoro':'femminelle','Peperoncino':'nodo','Peperone':'nodo','Melanzana':'nodo','Zucchina':'secche','Cetriolo':'nodo','Lattuga':'ciuffo','Rucola':'ciuffo',
+ 'Fico d\'India':'nopota','Cuscino della suocera':'nopota','Mammillaria':'nopota','Orecchie di coniglio':'nopota','Cereus':'nopota',
+ 'Dalia':'bulbo','Giglio':'bulbo','Tulipano':'bulbo','Narciso':'bulbo','Giacinto':'bulbo'
+};
 const slug=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const E={};
 for(const r of L){
@@ -408,7 +420,8 @@ for(const r of L){
     waterSummer:ws||null,waterWinter:ww||null,
     fertDays:o.fd!==undefined?o.fd:t.fd,fertMonths:t.fm,
     prune:o.pr!==undefined?o.pr:(t.pr||null),
-    problemi:o.problemi||t.problemi
+    problemi:o.problemi||t.problemi,
+    pota:POTA_O[n]||POTA_T[tp]||'nodo'
   };
   if(tox)c.tossica=tox;
   E[slug(n)]=c;

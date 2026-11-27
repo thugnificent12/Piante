@@ -251,6 +251,8 @@ const CAT={
 CAT['menta-piperita']={...MINT,nome:'Menta piperita',alias:['mentha piperita','menta','peppermint'],nota:'Cure generali della menta.'};
 CAT['menta-verde']={...MINT,nome:'Menta verde',sci:'Mentha spicata',wiki:['Mentha spicata','Menta verde'],alias:['mentha spicata','spearmint','menta romana'],nota:'Cure generali della menta.'};
 if(window.EXTRA)for(const k in window.EXTRA)if(!CAT[k])CAT[k]=window.EXTRA[k];
+const POTA0={'basilico':'cima','basilico-thai':'cima','basilico-liquirizia':'cima','basilico-vaniglia':'cima','menta-arancio':'cima','menta-cioccolato':'cima','menta-sweet-lemon':'cima','menta-piperita':'cima','menta-verde':'cima','pervinca':'cima','incenso':'cima','monstera':'nodo','nepenthes':'nodo','lavanda':'legno','sansevieria':'secche','ferocactus':'nopota'};
+for(const k in POTA0)if(CAT[k]&&!CAT[k].pota)CAT[k].pota=POTA0[k];
 const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
 function findCat(q){
   const n=norm(q);if(n.length<2)return[];
@@ -343,7 +345,10 @@ function useGeo(){
     let name='La tua posizione';
     try{const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&accept-language=it&lat='+lat+'&lon='+lon);const j=await r.json();const a=j.address||{};name=a.city||a.town||a.village||a.municipality||j.name||name;}catch(e){}
     S.loc={lat,lon,name};save();closeModal();await loadWeather(true);render();notifyToday();
-  },()=>toast('Non ho il permesso di leggere la posizione. Cerca la città a mano.'),{timeout:15000,maximumAge:6e5});
+  },err=>{
+    const m={1:'Opera non ha il permesso di leggere la posizione. Tocca il lucchetto (o i tre puntini) vicino all\'indirizzo del sito, poi "Impostazioni sito" e "Posizione", e scegli "Consenti". Poi riprova.',2:'Il telefono non riesce a trovare la posizione. Controlla che la Posizione (GPS) del telefono sia accesa e riprova.',3:'Ci mette troppo a trovare la posizione. Riprova, meglio vicino a una finestra.'};
+    toast((m[err&&err.code]||'Non riesco a leggere la posizione.')+' Intanto puoi cercare la città a mano.');
+  },{timeout:20000,maximumAge:6e5,enableHighAccuracy:false});
 }
 async function searchCity(q){
   const box=$('#cityres');if(!q.trim()){box.innerHTML='';return;}
@@ -460,7 +465,7 @@ function schedaHTML(p,c){
   }else{
     h+='<div class="'+(c.verificata?'badge':'badge o')+'" style="align-self:flex-start">'+(c.verificata?'Dati controllati su fonti':'Dati generali: da verificare')+'</div>';
     if(c.nota)h+='<div class="alert">'+esc(c.nota)+'</div>';
-    h+=r('Dove sta meglio',c.luce)+r('Acqua',c.acqua)+r('Che acqua',c.tipoAcqua)+r('Terra',c.terra)+r('Concime',c.concime)+r('Tipo',c.tipo)+r('Temperatura',c.temp+(c.tMinEst?' (valore stimato)':''))+r('Potatura',c.potatura)+r('Rinvaso',c.rinvaso);
+    h+=r('Dove sta meglio',c.luce)+r('Acqua',c.acqua)+r('Che acqua',c.tipoAcqua)+r('Terra',c.terra)+r('Concime',c.concime)+r('Tipo',c.tipo)+r('Temperatura',c.temp+(c.tMinEst?' (valore stimato)':''))+r('Potatura',c.potatura)+(c.pota?'<button class="btn l" data-act="pota" data-id="'+p.id+'">✂ Come si pota (con disegno)</button>':'')+r('Rinvaso',c.rinvaso);
     if(c.tossica)h+='<div class="warn"><b>Attenzione:</b> '+esc(c.tossica)+'</div>';
     if(c.fonti&&c.fonti.length)h+='<p class="foot">Fonti: '+c.fonti.map(f=>'<a href="'+esc(f[1])+'" target="_blank" rel="noopener">'+esc(f[0])+'</a>').join(' · ')+'</p>';
   }
@@ -505,6 +510,81 @@ function crescitaHTML(p,c){
 function addHTML(){
   return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a><h1 style="font-size:24px">Aggiungi pianta</h1></div><input type="search" id="q" placeholder="Nome della pianta (italiano, inglese, latino)"><div id="res" style="display:flex;flex-direction:column;gap:8px"><p class="sub">Cerco nei nomi di Wikipedia. Le piante nuove hanno nome e foto, ma i dati di cura non ci sono finché non li verifichiamo.</p></div>';
 }
+/* ================= GUIDE DI POTATURA ================= */
+const POTA={
+ cima:{t:'Come potare (cimare)',img:1,steps:['Aspetta che la pianta abbia almeno 6 foglie.','Taglia la cima subito sopra una coppia di foglie. Usa forbici pulite.','Da quella coppia nascono due rami nuovi. Togli i fiori appena spuntano.','Non togliere più di un terzo della pianta in una volta.']},
+ nodo:{t:'Come potare',img:1,steps:['Togli prima i rami secchi, gialli o rovinati.','Per accorciare un ramo, taglia circa 1 cm sopra una foglia (o sopra un nodo, il punto da cui esce la foglia).','Fai un taglio un po\' obliquo, con forbici pulite.','Non togliere più di un terzo della pianta in una volta. Meglio in primavera.']},
+ legno:{t:'Come potare',img:1,steps:['Taglia solo la parte verde, quella con le foglie.','Lascia sempre qualche foglia sotto il taglio.','Non tagliare nel legno vecchio e marrone: spesso non ricaccia.','Falla dopo la fioritura, non in pieno inverno.']},
+ secche:{t:'Come togliere le parti secche',img:1,steps:['Cerca le foglie secche, gialle o rovinate.','Tagliale vicino alla base, senza ferire le foglie sane.','Usa forbici pulite.','Le foglie verdi non si toccano.']},
+ fiori:{t:'Come togliere i fiori appassiti',img:1,steps:['Trova il fiore appassito.','Segui lo stelo fino alla prima foglia sana sotto il fiore.','Taglia subito sopra quella foglia.','Fallo spesso: la pianta fa nuovi fiori.']},
+ femminelle:{t:'Come togliere le femminelle',img:1,steps:['La femminella è il germoglio che nasce tra il fusto e una foglia.','Pizzicala con le dita quando è piccola (pochi centimetri).','Non togliere la punta del fusto principale.','Vale per i pomodori a crescita alta, non per quelli a cespuglio.']},
+ ciuffo:{t:'Come tagliare le foglie',img:1,steps:['Prendi un ciuffo di foglie con una mano.','Taglia a 3-5 cm dal terreno.','Non tagliare a filo terra: fa più fatica a ricrescere.','Ricrescono: puoi tagliare ancora dopo qualche settimana.']},
+ nopota:{t:'Non si pota',img:0,steps:['Non c\'è niente da accorciare.','Togli solo, con guanti e pinze, le parti secche.','Se vedi parti molli e scure, smetti di annaffiare e controlla la base.']},
+ ruota:{t:'Non si taglia: si gira',img:0,steps:['Prendi un segmento tra due dita.','Giralo piano finché si stacca da solo.','Così la pianta ricresce più folta.']},
+ bulbo:{t:'Dopo la fioritura',img:0,steps:['Togli solo il fiore appassito con il suo stelo.','Lascia le foglie finché ingialliscono da sole: servono al bulbo per prepararsi all\'anno dopo.','Poi puoi tagliarle alla base.']}
+};
+const POTA_YT=n=>'https://www.youtube.com/results?search_query='+encodeURIComponent('come potare '+n);
+function potaSVG(k){
+  const LF='<ellipse cx="-22" cy="-6" rx="22" ry="10" transform="rotate(-25 -22 -6)"/><ellipse cx="22" cy="-6" rx="22" ry="10" transform="rotate(25 22 -6)"/>';
+  const pair=(x,y,c,o)=>'<g fill="'+c+'" opacity="'+(o||1)+'" transform="translate('+x+' '+y+')">'+LF+'</g>';
+  const ln=(x1,y1,x2,y2,c,w,o)=>'<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+c+'" stroke-width="'+(w||5)+'" opacity="'+(o||1)+'" stroke-linecap="round"/>';
+  const cut=(x,y,len)=>'<line x1="'+(x-len/2)+'" y1="'+y+'" x2="'+(x+len/2)+'" y2="'+y+'" stroke="#d62828" stroke-width="3" stroke-dasharray="6 4"/>';
+  const sc=(x,y)=>'<text x="'+x+'" y="'+y+'" text-anchor="middle" font-size="22">✂️</text>';
+  const G='#3b8656',GL='#4f9d69';
+  const panel=(x,ok,cap,inner)=>'<rect x="'+x+'" y="4" width="162" height="262" rx="14" fill="'+(ok?'#eaf4ee':'#fbe9e5')+'"/><text x="'+(x+81)+'" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="'+(ok?'#2d6a4f':'#a8321f')+'">'+(ok?'✔ Giusto':'✖ Sbagliato')+'</text>'+inner+'<text x="'+(x+81)+'" y="256" text-anchor="middle" font-size="12" fill="#1d2b22">'+cap+'</text>';
+  let a='',b='',ca='',cb='';
+  const L=85,R=255;
+  if(k==='cima'){
+    ca='subito sopra due foglie';cb='resta un pezzo nudo';
+    a=pair(L,84,GL,.35)+'<ellipse cx="85" cy="58" rx="8" ry="14" fill="'+GL+'" opacity=".35"/>'+ln(L,232,L,50,GL,5,.35)+ln(L,232,L,116,G)+pair(L,200,G)+pair(L,152,G)+cut(L,116,66)+sc(L,104);
+    b=ln(R,232,R,90,G)+pair(R,200,G)+pair(R,152,G)+cut(R,90,66)+sc(R,78);
+  }else if(k==='nodo'){
+    ca='1 cm sopra la foglia';cb='troppo lontano dalla foglia';
+    const leaf=(x,y,d)=>'<ellipse cx="'+(x+d*22)+'" cy="'+(y-6)+'" rx="22" ry="10" fill="'+G+'" transform="rotate('+(d*-25)+' '+(x+d*22)+' '+(y-6)+')"/>';
+    a=ln(L,232,L,60,GL,5,.35)+ln(L,232,L,126,G)+leaf(L,210,-1)+leaf(L,170,1)+leaf(L,134,-1)+'<line x1="60" y1="118" x2="112" y2="108" stroke="#d62828" stroke-width="3" stroke-dasharray="6 4"/>'+sc(L,98);
+    b=ln(R,232,R,70,G)+leaf(R,210,-1)+leaf(R,170,1)+leaf(R,134,-1)+cut(R,70,66)+sc(R,58);
+  }else if(k==='legno'){
+    ca='nella parte verde';cb='nel legno vecchio';
+    const tuft=(x,y)=>'<g fill="'+G+'"><ellipse cx="'+(x-12)+'" cy="'+y+'" rx="4" ry="12" transform="rotate(-30 '+(x-12)+' '+y+')"/><ellipse cx="'+(x+12)+'" cy="'+y+'" rx="4" ry="12" transform="rotate(30 '+(x+12)+' '+y+')"/></g>';
+    const base=(x)=>ln(x,232,x,150,'#8a5a36',10)+ln(x,150,x,64,G,4);
+    a=base(L)+tuft(L,130)+tuft(L,100)+tuft(L,72)+cut(L,114,56)+sc(L,102);
+    b=base(R)+tuft(R,130)+tuft(R,100)+tuft(R,72)+cut(R,184,56)+sc(R,172);
+  }else if(k==='secche'){
+    ca='vicino alla base';cb='lascia un moncone secco';
+    const leafUp=(x,y,rot,c)=>'<ellipse cx="'+x+'" cy="'+y+'" rx="9" ry="46" fill="'+c+'" transform="rotate('+rot+' '+x+' '+(y+46)+')"/>';
+    const rosette=x=>'<rect x="'+(x-50)+'" y="222" width="100" height="14" rx="6" fill="#8a5a36"/>'+leafUp(x-22,170,-22,G)+leafUp(x,160,0,G)+leafUp(x+22,170,22,G);
+    a=rosette(L)+leafUp(L-30,178,-26,'#a07a3c')+cut(L-31,214,34)+sc(L-31,202);
+    b=rosette(R)+leafUp(R-30,178,-26,'#a07a3c')+cut(R-44,176,32)+sc(R-44,164);
+  }else if(k==='fiori'){
+    ca='sopra la prima foglia sana';cb='lascia lo stelo nudo';
+    const fl=(x,y,c)=>'<g fill="'+c+'">'+[0,72,144,216,288].map(r=>'<ellipse cx="'+x+'" cy="'+(y-12)+'" rx="7" ry="11" transform="rotate('+r+' '+x+' '+y+')"/>').join('')+'<circle cx="'+x+'" cy="'+y+'" r="6" fill="#8a5a36"/></g>';
+    a=ln(L,232,L,80,G)+pair(L,206,G)+pair(L,156,G)+fl(L,66,'#c9a98c')+cut(L,140,60)+sc(L,128);
+    b=ln(R,232,R,80,G)+pair(R,206,G)+pair(R,156,G)+fl(R,66,'#c9a98c')+cut(R,92,60)+sc(R,80);
+  }else if(k==='femminelle'){
+    ca='pizzica il germoglio';cb='non togliere la punta';
+    const leaf=(x,y,d)=>'<ellipse cx="'+(x+d*24)+'" cy="'+(y-4)+'" rx="24" ry="9" fill="'+G+'" transform="rotate('+(d*-20)+' '+(x+d*24)+' '+(y-4)+')"/>';
+    const stem=x=>ln(x,232,x,56,G,5)+leaf(x,200,-1)+leaf(x,152,1)+leaf(x,106,-1)+ln(x,176,x-22,150,GL,3)+'<ellipse cx="'+(x-26)+'" cy="146" rx="5" ry="9" fill="'+GL+'" transform="rotate(-40 '+(x-26)+' 146)"/>';
+    a=stem(L)+'<circle cx="'+(L-24)+'" cy="152" r="22" fill="none" stroke="#d62828" stroke-width="3" stroke-dasharray="6 4"/>'+sc(L-52,138);
+    b=stem(R)+'<circle cx="'+R+'" cy="52" r="20" fill="none" stroke="#d62828" stroke-width="3" stroke-dasharray="6 4"/>'+sc(R+36,48);
+  }else if(k==='ciuffo'){
+    ca='a 3-5 cm dal terreno';cb='a filo terra';
+    const tuft=x=>'<rect x="'+(x-46)+'" y="222" width="92" height="14" rx="6" fill="#8a5a36"/>'+[-30,-18,-6,6,18,30].map((d,i)=>ln(x+d*0.6,222,x+d*1.1,100+(i%2)*12,G,4)).join('');
+    a=tuft(L)+cut(L,176,86)+sc(L,164);
+    b=tuft(R)+cut(R,216,86)+sc(R,204);
+  }
+  return '<svg viewBox="0 0 340 270" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,sans-serif">'+panel(4,true,ca,a)+panel(174,false,cb,b)+'</svg>';
+}
+function potaHTML(p){
+  const c=CAT[p.key],g=POTA[c&&c.pota];if(!g)return '';
+  const nm=cap(p.name);
+  let h='<h2 style="margin:0">'+esc(g.t)+': '+esc(nm)+'</h2>';
+  if(g.img)h+='<div class="card" style="padding:10px">'+potaSVG(c.pota)+'</div>';
+  h+='<div class="card">'+g.steps.map((x,i)=>'<div style="display:flex;gap:10px;margin:8px 0;font-size:16px;line-height:1.35"><div style="flex:none;width:26px;height:26px;border-radius:50%;background:#2d6a4f;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px">'+(i+1)+'</div><div>'+esc(x)+'</div></div>').join('')+'</div>';
+  if(c.prune&&c.prune.months)h+='<p class="sub">Periodo giusto: '+esc(c.potatura)+'</p>';
+  h+='<a class="btn l" style="text-align:center;text-decoration:none" target="_blank" rel="noopener" href="'+esc(POTA_YT(nm))+'">▶ Guarda un video (YouTube)</a><div class="row"><button class="btn" data-act="close">Chiudi</button></div>';
+  return h;
+}
+
 /* ================= PERENUAL (database esterno) ================= */
 const PKEY="sk-SdDE6b098135cdd0520873";
 const PXM={january:'gennaio',february:'febbraio',march:'marzo',april:'aprile',may:'maggio',june:'giugno',july:'luglio',august:'agosto',september:'settembre',october:'ottobre',november:'novembre',december:'dicembre'};
@@ -651,7 +731,9 @@ async function searchPlants(q){
 }
 
 function render(){
-  const h=location.hash||'#/';const m=h.match(/^#\/p\/([^/]+)\/(s|h|c)$/);
+  const h=location.hash||'#/';
+  if(h==='#/mie14'){START.forEach(k=>{if(CAT[k]&&!S.plants.some(x=>x.key===k)){S.next=(S.next||100)+1;const o=mk(k,0);o.id='p'+S.next;S.plants.push(o);}});save();location.hash='#/';return;}
+  const m=h.match(/^#\/p\/([^/]+)\/(s|h|c)$/);
   let html;
   if(m){const p=S.plants.find(x=>x.id===m[1]);if(!p){location.hash='#/';return;}const c=CAT[p.key]||null;html=m[2]==='s'?schedaHTML(p,c):m[2]==='h'?saluteHTML(p,c):crescitaHTML(p,c);}
   else if(h==='#/add')html=addHTML();
@@ -665,6 +747,7 @@ document.addEventListener('click',async e=>{
   const b=e.target.closest('[data-act]');if(!b||b.tagName==='INPUT')return;
   const a=b.dataset.act,id=b.dataset.id,p=id&&S.plants.find(x=>x.id===id);
   if(a==='close'){closeModal();return;}
+  if(a==='pota'&&p){openModal(potaHTML(p));return;}
   if(a==='geo'){useGeo();return;}
   if(a==='refresh'){await loadWeather(true);rerender();return;}
   if(a==='notif'){enableNotif();return;}
