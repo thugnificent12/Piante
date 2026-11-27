@@ -112,9 +112,9 @@ const CAT={
  'basilico-thai':{...BASIL,nome:'Basilico thai',foto:{q:'Thai basil',must:[['thai'],['basil']]},nota:'Varietà di basilico: valgono le cure del basilico.'},
  'basilico-liquirizia':{...BASIL,nome:'Basilico liquirizia',foto:{q:'Licorice basil',must:[['licorice','liquorice'],['basil']]},nota:'Varietà di basilico: valgono le cure del basilico.'},
  'basilico-vaniglia':{...BASIL,nome:'Basilico vaniglia',foto:{q:'Vanilla basil',must:[['vanilla'],['basil']]},nota:'Varietà di basilico: valgono le cure del basilico.'},
- 'menta-arancio':{...MINT,nome:'Menta arancio',foto:{q:'Orange mint',must:[['orange'],['mint']]},nota:'Varietà di menta: valgono le cure della menta.'},
- 'menta-cioccolato':{...MINT,nome:'Menta cioccolato',foto:{q:'Chocolate mint',must:[['chocolate'],['mint']]},nota:'Varietà di menta: valgono le cure della menta.'},
- 'menta-sweet-lemon':{...MINT,nome:'Menta sweet lemon',foto:{q:'Sweet lemon mint',must:[['sweet'],['lemon'],['mint']]},nota:'Varietà di menta: valgono le cure della menta.'},
+ 'menta-arancio':{...MINT,nome:'Menta arancio',nota:'Varietà di menta: valgono le cure della menta.'},
+ 'menta-cioccolato':{...MINT,nome:'Menta cioccolato',nota:'Varietà di menta: valgono le cure della menta.'},
+ 'menta-sweet-lemon':{...MINT,nome:'Menta sweet lemon',nota:'Varietà di menta: valgono le cure della menta.'},
  'monstera':{
   nome:'Monstera deliciosa',sci:'Monstera deliciosa',wiki:['Monstera deliciosa'],outdoor:false,verificata:false,fonti:[],
   luce:'Luce forte ma non diretta. Il sole diretto brucia le foglie.',
@@ -356,7 +356,7 @@ async function photoFor(titles){
   return null;
 }
 async function commonsPhoto(f){
-  const k='cimg:'+f.q,v=localStorage.getItem(k);
+  const k='cimg2:'+f.q,v=localStorage.getItem(k);
   if(v==='none')return null;if(v)return JSON.parse(v);
   try{
     const u='https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrlimit=12&gsrsearch='+encodeURIComponent(f.q)+'&prop=imageinfo&iiprop=url|mime&iiurlwidth=400&format=json&origin=*';
@@ -365,6 +365,8 @@ async function commonsPhoto(f){
     for(const pg of pages){
       const t=(pg.title||'').toLowerCase(),ii=pg.imageinfo&&pg.imageinfo[0];
       if(!ii||!/jpeg|png/.test(ii.mime||''))continue;
+      if(/tic tac|candy|ice cream|gelato|tea|sauce|soup|salad|pesto|logo|packag|bottle|jar|\bcup\b|drink|cocktail|dish|bread|pizza|cake/.test(t))continue;
+      if(!/plant|leaf|leaves|herb|ocimum|growing|garden/.test(t))continue;
       if(f.must.every(g=>g.some(w=>t.includes(w)))){const res={u:ii.thumburl||ii.url};try{localStorage.setItem(k,JSON.stringify(res));}catch(e){}return res;}
     }
     try{localStorage.setItem(k,'none');}catch(e){}
