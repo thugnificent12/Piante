@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <title>Le mie piante</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2F6B4F">
+<meta name="theme-color" content="#2b0f3f">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
@@ -63,6 +63,21 @@ input[type=text],input[type=number],input[type=search],select{width:100%;min-hei
 #splash .s button{left:8%;top:61%;width:86%;height:25%}
 @media (min-aspect-ratio:53/100){#splash .box.t{display:none}#splash .box.s{display:block}}
 @media (min-aspect-ratio:60/100){#splash .box.s{width:calc(100dvh*941/1672)}}
+</style>
+<style id="gl">
+body{background:#2b0f3f;color:#fff1e6}a{color:#ff9f1c}
+.sub,.lbl,.foot{color:#e8b9d8}
+.card,.plant,.pick{background:#4a1a5e;color:#fff1e6}
+.wx{background:#3a2370}.wx .lbl{color:#e8b9d8}
+.todo{background:#d6336c;border:2px solid #ffb347}.todo .sub{color:#ffe3ef}.sep{background:#f08fb3}
+.btn{background:#ff9f1c;color:#2b0f3f}.btn.w{background:#fff1e6;color:#d6336c}
+.btn.l,.tabs a{background:#5e2a78;color:#ffe3b3}.tabs a.on{background:#ff9f1c;color:#2b0f3f}
+.btn.y{background:#7CFC1A;color:#1d0b28}
+.ph,.hero{background-color:#6a2a80}.due{color:#ffb347}
+.alert{background:#5c3410;color:#ffe9c2}.badge{background:#5e2a78;color:#ffe3b3}
+input[type=text],input[type=number],input[type=search],select{background:#3a1550;color:#fff1e6;border-color:#7a3a98}
+#sheet{background:#3a1550;color:#fff1e6}
+.name{color:#A8F000}
 </style>
 </head>
 <body>
@@ -453,7 +468,7 @@ function homeHTML(){
   let wx='';
   if(!S.loc)wx='<div class="wx"><span class="lbl">Meteo</span><span class="val">Dimmi dove sei: così ti avviso con il tempo vero, non con il periodo.</span><div class="row" style="flex-wrap:wrap;margin-top:6px"><button class="btn" data-act="geo">Usa la mia posizione</button><button class="btn l" data-act="citybox">Scrivi la città</button></div></div>';
   else if(!W)wx='<div class="wx"><span class="lbl">'+esc(S.loc.name)+'</span><span class="val">Non riesco a leggere il meteo: manca internet?</span><div class="row"><button class="btn l" data-act="refresh">Riprova</button><button class="btn l" data-act="citybox">Cambia luogo</button></div></div>';
-  else wx='<div class="wx"><span class="lbl">'+esc(S.loc.name)+', adesso</span><span style="font-size:17px;font-weight:700">'+Math.round(W.temp)+' °C, '+(WX[W.code]||'')+'</span><span class="sub" style="color:#2B3A47">Minima nelle prossime 24 ore: '+Math.round(W.min)+' °C'+(W.rain>=1?' · pioggia oggi: '+W.rain.toFixed(0)+' mm':'')+'</span><div><button class="btn l" style="min-height:40px" data-act="citybox">Cambia luogo</button></div></div>';
+  else wx='<div class="wx"><span class="lbl">'+esc(S.loc.name)+', adesso</span><span style="font-size:17px;font-weight:700">'+Math.round(W.temp)+' °C, '+(WX[W.code]||'')+'</span><span class="sub">Minima nelle prossime 24 ore: '+Math.round(W.min)+' °C'+(W.rain>=1?' · pioggia oggi: '+W.rain.toFixed(0)+' mm':'')+'</span><div><button class="btn l" style="min-height:40px" data-act="citybox">Cambia luogo</button></div></div>';
   const al=alerts.map(a=>'<div class="alert"><b>'+esc(a.text)+'</b></div>').join('');
   const todo=list.length?'<div class="todo"><span class="lbl">DA FARE OGGI</span>'+list.map((t,i)=>(i?'<div class="sep"></div>':'')+'<div class="row" style="justify-content:space-between"><div style="min-width:0"><div style="font-weight:600;font-size:16px">'+esc(t.title)+'</div>'+(t.sub?'<div class="sub">'+esc(t.sub)+'</div>':'')+'</div><button class="btn w" data-act="done" data-id="'+t.id+'" data-kind="'+t.kind+'">Fatto</button></div>').join('')+'</div>':'<div class="card"><b>Oggi non c\'è niente da fare.</b></div>';
   const pl=S.plants.map(p=>{const st=statusOf(p),c=CAT[p.key];const sub=(c&&c.nome!==p.name?esc(cap(c.nome))+' · ':'')+esc(st.t);return '<div class="plant"><a class="main" href="#/p/'+p.id+'/s">'+ph(p,56)+'<div style="min-width:0"><div class="name">'+esc(cap(p.name))+'</div><div class="'+(st.due?'due':'sub')+'">'+sub+'</div></div></a><button class="ic" aria-label="Cambia nome" data-act="rename" data-id="'+p.id+'">'+PENCIL+'</button></div>';}).join('');
@@ -492,7 +507,7 @@ function schedaHTML(p,c){
 function saluteHTML(p,c){
   let h=headHTML(p,c)+tabsHTML(p.id,'h');
   const open=p.issues.filter(i=>!i.done);
-  h+='<div class="todo" style="background:'+(open.length?'#9A5B00':'#2F6B4F')+'"><span class="lbl">STATO</span><span style="font-size:22px;font-weight:700">'+(open.length?'Problemi segnati: '+open.length:'Nessun problema segnato')+'</span><span class="sub">Ultimo controllo: '+fmtAgo(p.lastCheck)+'</span><div><button class="btn w" data-act="done" data-id="'+p.id+'" data-kind="controllo">Controllata oggi, sta bene</button></div></div>';
+  h+='<div class="todo" style="background:'+(open.length?'#9A5B00':'#5e2a78')+'"><span class="lbl">STATO</span><span style="font-size:22px;font-weight:700">'+(open.length?'Problemi segnati: '+open.length:'Nessun problema segnato')+'</span><span class="sub">Ultimo controllo: '+fmtAgo(p.lastCheck)+'</span><div><button class="btn w" data-act="done" data-id="'+p.id+'" data-kind="controllo">Controllata oggi, sta bene</button></div></div>';
   if(open.length)h+=open.map((i,k)=>'<div class="card"><b>'+esc(i.t)+'</b><div class="sub">Segnato '+fmtAgo(i.d)+'</div><button class="btn l" style="margin-top:6px" data-act="resolve" data-id="'+p.id+'" data-k="'+p.issues.indexOf(i)+'">Risolto</button></div>').join('');
   if(c){
     h+='<h2>Se vedi questo</h2>'+c.problemi.map((q,k)=>'<div class="card"><b>'+esc(q[0])+'</b><div class="sub">Causa: '+esc(q[1])+'</div><div class="val">Cosa fare: '+esc(q[2])+'</div><button class="btn l" style="margin-top:6px" data-act="issue" data-id="'+p.id+'" data-k="'+k+'">Ce l\'ha</button></div>').join('');
@@ -507,7 +522,7 @@ function crescitaHTML(p,c){
   if(!g.length)h+='<div class="val">Nessuna misura. Misura la pianta e scrivila qui sotto.</div>';
   else{
     h+='<div style="font-size:36px;font-weight:700">'+last.cm+' cm</div>';
-    if(g.length>1){const diff=+(last.cm-first.cm).toFixed(1),days=Math.max(1,daysSince(first.d)-daysSince(last.d));h+='<div style="color:#2F6B4F;font-weight:600">'+(diff>=0?'+':'')+diff+' cm dal '+fmtDate(first.d)+' ('+((diff/days*30).toFixed(1))+' cm al mese)</div>';
+    if(g.length>1){const diff=+(last.cm-first.cm).toFixed(1),days=Math.max(1,daysSince(first.d)-daysSince(last.d));h+='<div style="color:#A8F000;font-weight:600">'+(diff>=0?'+':'')+diff+' cm dal '+fmtDate(first.d)+' ('+((diff/days*30).toFixed(1))+' cm al mese)</div>';
       const W2=330,H2=130,xs=g.map(x=>new Date(x.d+'T00:00:00').getTime()),x0=xs[0],x1=xs[xs.length-1]||x0+1,vs=g.map(x=>x.cm),lo=Math.min.apply(null,vs),hi=Math.max.apply(null,vs),span=hi-lo||1;
       const pts=g.map((x,i)=>[(20+(W2-40)*(x1===x0?0.5:(xs[i]-x0)/(x1-x0))).toFixed(1),(H2-20-(H2-40)*((x.cm-lo)/span)).toFixed(1)]);
       h+='<svg viewBox="0 0 '+W2+' '+(H2+16)+'" width="100%" role="img" aria-label="Altezza nel tempo"><line x1="10" y1="'+(H2-8)+'" x2="320" y2="'+(H2-8)+'" stroke="#D9DDD3"/><polyline fill="none" stroke="#2F6B4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="'+pts.map(q=>q.join(',')).join(' ')+'"/>'+pts.map(q=>'<circle cx="'+q[0]+'" cy="'+q[1]+'" r="4" fill="#2F6B4F"/>').join('')+'</svg>';
@@ -589,7 +604,7 @@ function potaHTML(p){
   const nm=cap(p.name);
   let h='<h2 style="margin:0">'+esc(g.t)+': '+esc(nm)+'</h2>';
   if(g.img)h+='<div class="card" style="padding:10px">'+potaSVG(c.pota)+'</div>';
-  h+='<div class="card">'+g.steps.map((x,i)=>'<div style="display:flex;gap:10px;margin:8px 0;font-size:16px;line-height:1.35"><div style="flex:none;width:26px;height:26px;border-radius:50%;background:#2d6a4f;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px">'+(i+1)+'</div><div>'+esc(x)+'</div></div>').join('')+'</div>';
+  h+='<div class="card">'+g.steps.map((x,i)=>'<div style="display:flex;gap:10px;margin:8px 0;font-size:16px;line-height:1.35"><div style="flex:none;width:26px;height:26px;border-radius:50%;background:#d6336c;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px">'+(i+1)+'</div><div>'+esc(x)+'</div></div>').join('')+'</div>';
   if(c.prune&&c.prune.months)h+='<p class="sub">Periodo giusto: '+esc(c.potatura)+'</p>';
   h+='<a class="btn l" style="text-align:center;text-decoration:none" target="_blank" rel="noopener" href="'+esc(POTA_YT(nm))+'">▶ Guarda un video (YouTube)</a><div class="row"><button class="btn" data-act="close">Chiudi</button></div>';
   return h;
