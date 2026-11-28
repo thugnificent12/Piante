@@ -767,6 +767,22 @@ function trHTML(t){
   return h;
 }
 
+async function dbSearch(q){
+  const box=$('#dbres');if(!box||q.length<2)return;
+  box.innerHTML='<p class="sub">Cerco...</p>';
+  const out=[];const seen={};
+  const [pr,tr]=await Promise.allSettled([pxGet('species-list',{q:q}),trGet('plants/search',{q:q})]);
+  if(pr.status==='fulfilled'){(pr.value.data||[]).slice(0,10).forEach(x=>{
+    const sci=Array.isArray(x.scientific_name)?x.scientific_name[0]:(x.scientific_name||'');
+    const k=norm(sci||x.common_name||'');if(!k||seen[k])return;seen[k]=1;
+    out.push({src:'x',id:x.id,n:x.common_name||sci,s:sci});});}
+  if(tr.status==='fulfilled'){(tr.value.data||[]).slice(0,10).forEach(x=>{
+    const sci=x.scientific_name||'';const k=norm(sci||x.common_name||'');if(!k||seen[k])return;seen[k]=1;
+    out.push({src:'t',id:x.id,n:x.common_name||sci,s:sci});});}
+  if(q!==($('#q')||{}).value)return;
+  if(!out.length){box.innerHTML='<p class="sub">'+(pr.status==='rejected'&&tr.status==='rejected'?'Non riesco a cercare adesso. Riprova più tardi.':'Non ho trovato niente.')+'</p>';return;}
+  box.innerHTML=out.slice(0,14).map(x=>'<button class="pick" data-act="'+(x.src==='x'?'addx':'addt')+'" data-id="'+esc(x.id)+'" data-n="'+esc(x.n)+'" data-s="'+esc(x.s)+'"><b>'+esc(cap(x.n))+'</b><span class="sub">'+esc(x.s)+'</span></button>').join('');
+}
 async function searchPlants(q){
   const box=$('#res');if(q.trim().length<2){return;}
   const mine=findCat(q).slice(0,8).map(k=>'<button class="pick" data-act="addc" data-k="'+esc(k)+'"><b>'+esc(cap(CAT[k].nome))+'</b><span class="sub">Con scheda di cura'+(CAT[k].verificata?' controllata':' generale (da verificare)')+'</span></button>').join('');
@@ -780,7 +796,7 @@ async function searchPlants(q){
   }
   if(q!==$('#q').value)return;
   const seen={};const wiki=hits.filter(x=>{const f=findCat(x.t)[0];if(f&&norm(x.t)===norm(CAT[f].sci||''))return false;if(seen[x.t])return false;seen[x.t]=1;return true;}).slice(0,10).map(x=>'<button class="pick" data-act="addp" data-t="'+esc(x.t)+'"><b>'+esc(x.t)+'</b><span class="sub">Senza scheda di cura. '+esc(x.s.slice(0,70))+'</span></button>').join('');
-  box.innerHTML=(mine+wiki||'<p class="sub">Niente trovato.</p>')+'<button class="btn l" style="margin-top:10px" data-act="pxsearch">Cerca anche in Perenual (database grande)</button><div id="pxres"></div>'+'<button class="btn l" style="margin-top:10px" data-act="trsearch">Cerca anche in Trefle (database grande)</button><div id="trres"></div>';
+  box.innerHTML=(mine+wiki||'<p class="sub">Niente trovato.</p>')+'<button class="btn l" style="margin-top:10px" data-act="dbsearch">Cerca altre piante (database grande)</button><div id="dbres"></div>';
 }
 
 function render(){
@@ -819,6 +835,7 @@ document.addEventListener('click',async e=>{
   if(a==='delok'&&p){S.plants=S.plants.filter(x=>x.id!==p.id);save();closeModal();location.hash='#/';return;}
   if(a==='pickphoto'&&p){photoId=p.id;$('#file').click();return;}
   if(a==='rmphoto'&&p){p.photo=null;save();rerender();return;}
+  if(a==='dbsearch'){dbSearch(($('#q').value||'').trim());return;}
   if(a==='trsearch'){trSearch(($('#q').value||'').trim());return;}
   if(a==='addt'){
     const id=b.dataset.id,n=b.dataset.n,sci=b.dataset.s;
