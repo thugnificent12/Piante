@@ -244,7 +244,7 @@ const CARN={
 const L=[
  /* da appartamento, foglie */
  ['Pothos',['pothos','potos','epipremnum','scindapsus aureus','devil\'s ivy'],'Epipremnum aureum','ombra',7,12,12,0,X1],
- ['Philodendron scandens',['philodendron','filodendro','philodendron hederaceum','heartleaf philodendron'],'Philodendron hederaceum','verde',7,12,12,0,X1],
+ ['Philodendron scandens',['philodendron','filodendro','philodendron hederaceum','heartleaf philodendron'],'Philodendron hederaceum','verde',7,12,15,0,X1],
  ['Ficus benjamina',['ficus','benjamin','weeping fig'],'Ficus benjamina','verde',7,14,10,0,X1,{luce:'Luce forte ma non diretta. Non ama gli spostamenti e le correnti: se la sposti perde le foglie.'}],
  ['Ficus lyrata',['ficus lira','fiddle leaf fig','fiddle-leaf'],'Ficus lyrata','verde',7,14,12,0,X1],
  ['Ficus elastica',['gomma','pianta della gomma','rubber plant','ficus robusta'],'Ficus elastica','verde',8,14,10,0,X3],
@@ -276,13 +276,13 @@ const L=[
  ['Rhaphidophora tetrasperma',['rhaphidophora','mini monstera','monstera minima'],'Rhaphidophora tetrasperma','verde',7,12,12,0,X1],
  ['Strelitzia',['strelitzia reginae','uccello del paradiso','bird of paradise'],'Strelitzia reginae','verde',7,14,10,0,X1,{luce:'Molta luce e qualche ora di sole.'}],
  ['Clivia',['clivia miniata','clivia'],'Clivia miniata','verde',10,21,5,0,X1,{luce:'Luce media o forte, senza sole diretto. In inverno tienila al fresco (10-12 °C) per farla fiorire.',acqua:'Quando la terra è asciutta per i primi 3 cm. In inverno poca acqua, in un posto fresco.'}],
- ['Pachira',['pachira aquatica','castagno della guyana','money tree','albero dei soldi'],'Pachira aquatica','verde',10,18,10,0,null],
+ ['Pachira',['pachira aquatica','castagno della guyana','money tree','albero dei soldi'],'Pachira aquatica','verde',10,18,12,0,null],
  ['Cyperus',['cyperus','papiro','papiro da appartamento','umbrella papyrus'],'Cyperus alternifolius','umida',2,4,5,0,null,{acqua:'Ama stare con un po\' d\'acqua nel sottovaso: tienilo sempre umido.',luce:'Luce forte e anche un po\' di sole.'}],
  ['Beaucarnea',['beaucarnea recurvata','nolina','pianta zampa d\'elefante','ponytail palm'],'Beaucarnea recurvata','grassa',14,30,8,0,null,{luce:'Molta luce, anche sole. Il fusto gonfio tiene acqua di riserva.'}],
  /* felci, palme */
  ['Felce di Boston',['nephrolepis','nephrolepis exaltata','felce','boston fern'],'Nephrolepis exaltata','felce',3,5,10,0,null],
  ['Asplenium',['asplenium nidus','nido d\'uccello','bird\'s nest fern','felce nido'],'Asplenium nidus','felce',5,8,12,0,null,{acqua:'Terra sempre leggermente umida. Versa l\'acqua intorno, non al centro della rosetta.'}],
- ['Kentia',['howea forsteriana','kentia','palma kentia'],'Howea forsteriana','palma',7,14,8,0,null],
+ ['Kentia',['howea forsteriana','kentia','palma kentia'],'Howea forsteriana','palma',7,14,12,0,null],
  ['Palma da salotto',['chamaedorea elegans','palma da salotto','parlor palm'],'Chamaedorea elegans','palma',5,8,10,0,null],
  ['Areca',['dypsis lutescens','areca','palma areca','chrysalidocarpus'],'Dypsis lutescens','palma',5,8,12,0,null],
  ['Palma nana',['chamaerops humilis','palma nana','palma di san pietro','mediterranean fan palm'],'Chamaerops humilis','palma',10,30,-8,1,null,{luce:'Sole pieno o mezz\'ombra luminosa.'}],
