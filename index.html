@@ -531,22 +531,23 @@ function saluteHTML(p,c){
   }else h+='<div class="warn">Non ho una lista di problemi verificata per questa pianta.</div>';
   return h;
 }
+const CIC={"alt": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#3DB8FF\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4\"/></svg>", "new": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#FF5FA2\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 8v8M8 12h8\"/></svg>", "list": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#B794FF\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 6h13M8 12h13M8 18h13\"/><circle cx=\"4\" cy=\"6\" r=\"1\"/><circle cx=\"4\" cy=\"12\" r=\"1\"/><circle cx=\"4\" cy=\"18\" r=\"1\"/></svg>"};
 function crescitaHTML(p,c){
   let h=headHTML(p,c)+tabsHTML(p.id,'c');
   const g=p.growth.slice().sort((a,b)=>a.d<b.d?-1:1);
   const last=g[g.length-1],first=g[0];
-  h+='<div class="card"><div class="lbl">Altezza</div>';
+  h+='<div class="card">'+lh(CIC.alt,'Altezza')+'';
   if(!g.length)h+='<div class="val">Nessuna misura. Misura la pianta e scrivila qui sotto.</div>';
   else{
     h+='<div style="font-size:36px;font-weight:700">'+last.cm+' cm</div>';
     if(g.length>1){const diff=+(last.cm-first.cm).toFixed(1),days=Math.max(1,daysSince(first.d)-daysSince(last.d));h+='<div style="color:#A8F000;font-weight:600">'+(diff>=0?'+':'')+diff+' cm dal '+fmtDate(first.d)+' ('+((diff/days*30).toFixed(1))+' cm al mese)</div>';
       const W2=330,H2=130,xs=g.map(x=>new Date(x.d+'T00:00:00').getTime()),x0=xs[0],x1=xs[xs.length-1]||x0+1,vs=g.map(x=>x.cm),lo=Math.min.apply(null,vs),hi=Math.max.apply(null,vs),span=hi-lo||1;
       const pts=g.map((x,i)=>[(20+(W2-40)*(x1===x0?0.5:(xs[i]-x0)/(x1-x0))).toFixed(1),(H2-20-(H2-40)*((x.cm-lo)/span)).toFixed(1)]);
-      h+='<svg viewBox="0 0 '+W2+' '+(H2+16)+'" width="100%" role="img" aria-label="Altezza nel tempo"><line x1="10" y1="'+(H2-8)+'" x2="320" y2="'+(H2-8)+'" stroke="#D9DDD3"/><polyline fill="none" stroke="#2F6B4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="'+pts.map(q=>q.join(',')).join(' ')+'"/>'+pts.map(q=>'<circle cx="'+q[0]+'" cy="'+q[1]+'" r="4" fill="#2F6B4F"/>').join('')+'</svg>';
+      h+='<svg viewBox="0 0 '+W2+' '+(H2+16)+'" width="100%" role="img" aria-label="Altezza nel tempo"><line x1="10" y1="'+(H2-8)+'" x2="320" y2="'+(H2-8)+'" stroke="#7a45a8"/><polyline fill="none" stroke="#ff9f1c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="'+pts.map(q=>q.join(',')).join(' ')+'"/>'+pts.map(q=>'<circle cx="'+q[0]+'" cy="'+q[1]+'" r="4" fill="#ff9f1c"/>').join('')+'</svg>';
     }
   }
-  h+='</div><div class="card"><div class="lbl">Nuova misura</div><div class="row"><input type="number" step="0.5" min="0" id="cm" placeholder="cm"><button class="btn" data-act="measure" data-id="'+p.id+'">Salva</button></div></div>';
-  if(g.length)h+='<div class="card"><div class="lbl">Misure</div>'+g.slice().reverse().slice(0,10).map(x=>'<div class="row" style="justify-content:space-between;min-height:32px"><span>'+fmtDate(x.d)+'</span><b>'+x.cm+' cm</b></div>').join('')+'</div>';
+  h+='</div><div class="card">'+lh(CIC.new,'Nuova misura')+'<div class="row"><input type="number" step="0.5" min="0" id="cm" placeholder="cm"><button class="btn" data-act="measure" data-id="'+p.id+'">Salva</button></div></div>';
+  if(g.length)h+='<div class="card">'+lh(CIC.list,'Misure')+''+g.slice().reverse().slice(0,10).map(x=>'<div class="row" style="justify-content:space-between;min-height:32px"><span>'+fmtDate(x.d)+'</span><b>'+x.cm+' cm</b></div>').join('')+'</div>';
   return h;
 }
 function addHTML(){
