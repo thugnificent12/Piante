@@ -289,7 +289,7 @@ const L=[
  ['Cycas',['cycas revoluta','sago palm','palma sago'],'Cycas revoluta','palma',10,21,-5,1,X2,{luce:'Sole o mezz\'ombra luminosa.'}],
  /* fiori in casa */
  ['Violetta africana',['saintpaulia','african violet','saintpaulia ionantha','violetta'],'Streptocarpus ionanthus','umida',5,7,12,0,null,{luce:'Luce forte ma non diretta.',acqua:'Dal sottovaso, con acqua tiepida: scola dopo 15 minuti. Non bagnare le foglie.',tipoAcqua:'Acqua tiepida, a temperatura ambiente, senza calcare.'}],
- ['Orchidea Phalaenopsis',['phalaenopsis','orchidea','orchid','moth orchid'],'Phalaenopsis','verde',7,10,12,0,null,{
+ ['Orchidea Phalaenopsis',['phalaenopsis','orchidea','orchid','moth orchid'],'Phalaenopsis','verde',7,10,15,0,null,{
   luce:'Molta luce ma senza sole diretto.',
   acqua:'Immergi il vaso in acqua per 10-15 minuti, poi scola bene. Annaffia quando le radici diventano argentee.',
   tipoAcqua:'Acqua senza calcare, tiepida (piovana o lasciata riposare).',
@@ -302,10 +302,10 @@ const L=[
  ['Ciclamino',['cyclamen','cyclamen persicum','ciclamino'],'Cyclamen persicum','bulbo',4,4,5,0,X1,{luce:'Luce forte ma non diretta, e fresco.',acqua:'Dal sottovaso, quando la terra è asciutta in superficie. Non bagnare il cuore.',tipo:'Fiorisce in autunno-inverno. In estate perde le foglie e riposa.',temp:'Sta bene fresco, tra 10 e 15 °C.'}],
  ['Stella di Natale',['poinsettia','euphorbia pulcherrima','stella di natale'],'Euphorbia pulcherrima','verde',7,7,10,0,X3,{luce:'Molta luce ma non sole diretto. Niente correnti d\'aria.',tipo:'Fiorisce in inverno (le "foglie" rosse). Dopo si può tenere per l\'anno dopo.'}],
  ['Kalanchoe',['kalanchoe','kalanchoe blossfeldiana','kalanchoe blossfeldiana'],'Kalanchoe blossfeldiana','grassa',12,21,10,0,X1],
- ['Gardenia',['gardenia jasminoides','gardenia'],'Gardenia jasminoides','arbusto',4,7,5,0,X1,{luce:'Luce forte ma non diretta.',acqua:'Terra sempre un po\' umida, mai secca.',tipoAcqua:ACIDA,terra:'Terriccio acido (per azalee).',tipo:'Sempreverde. Teme gli sbalzi di temperatura.'}],
+ ['Gardenia',['gardenia jasminoides','gardenia'],'Gardenia jasminoides','arbusto',4,7,6,0,X1,{luce:'Luce forte ma non diretta.',acqua:'Terra sempre un po\' umida, mai secca.',tipoAcqua:ACIDA,terra:'Terriccio acido (per azalee).',tipo:'Sempreverde. Teme gli sbalzi di temperatura.'}],
  ['Gelsomino da appartamento',['jasminum polyanthum','gelsomino','jasmine','gelsomino rosa'],'Jasminum polyanthum','arbusto',5,10,3,0,null,{luce:'Sole o luce forte.',tipo:'Rampicante sempreverde. Fiorisce in inverno-primavera in un posto fresco.'}],
  ['Ibisco',['hibiscus rosa-sinensis','hibiscus','ibisco cinese','rosa cinese'],'Hibiscus rosa-sinensis','arbusto',3,8,8,0,null,{luce:'Sole o luce molto forte.',acqua:'Terra sempre un po\' umida in estate: ha molta sete.'}],
- ['Bougainvillea',['bougainvillea','buganvillea'],'Bougainvillea glabra','arbusto',4,14,3,1,X1,{luce:'Sole pieno, almeno 6 ore.',acqua:'Quando la terra è asciutta per i primi 3 cm. Fiorisce meglio un po\' all\'asciutto.',tipo:'Rampicante. Perde le foglie con il freddo. Teme il gelo.'}],
+ ['Bougainvillea',['bougainvillea','buganvillea'],'Bougainvillea glabra','arbusto',4,14,7,1,X1,{luce:'Sole pieno, almeno 6 ore.',acqua:'Quando la terra è asciutta per i primi 3 cm. Fiorisce meglio un po\' all\'asciutto.',tipo:'Rampicante. Perde le foglie con il freddo. Teme il gelo.'}],
  ['Mandevilla',['mandevilla','dipladenia','dipladenia'],'Mandevilla sanderi','arbusto',4,14,5,1,X1,{luce:'Sole pieno o luce molto forte.',tipo:'Rampicante. Fiorisce da primavera a autunno; teme il freddo.'}],
  ['Lantana',['lantana camara','lantana'],'Lantana camara','arbusto',4,14,0,1,X1,{luce:'Sole pieno.',tipo:'Arbusto fiorito: da primavera ad autunno. Teme il gelo.'}],
  ['Geranio',['pelargonium','geranio','geranio zonale','pelargonium zonale','geranio edera'],'Pelargonium zonale','arbusto',4,14,3,1,X1,{luce:'Sole pieno o mezz\'ombra luminosa.',acqua:'Quando i primi 2 cm di terra sono asciutti. Meglio poco che troppo.',potatura:'Togli i fiori e le foglie appassiti. A fine inverno accorcia i rami.',tipo:'Fiorisce da primavera ad autunno. Teme il gelo: in inverno riparalo.'}],
