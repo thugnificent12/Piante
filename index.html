@@ -439,6 +439,8 @@ function shrink(file,max){return new Promise((res,rej)=>{const img=new Image(),u
 function ph(p,s){
   const st='width:'+s+'px;height:'+s+'px',c=CAT[p.key];
   if(p.photo)return '<div class="ph has" style="'+st+";background-image:url('"+p.photo+"')"+'">'+LEAF+'</div>';
+  const dbi=(p.px&&p.px.img)||(p.tr&&p.tr.img);
+  if(!(c&&c.foto)&&dbi)return '<div class="ph has" style="'+st+";background-image:url('"+esc(dbi)+"')"+'">'+LEAF+'</div>';
   if(c&&c.foto)return '<div class="ph" style="'+st+'" data-foto="'+esc(JSON.stringify(c.foto))+'">'+LEAF+'</div>';
   return '<div class="ph" style="'+st+'" data-ph="'+esc(JSON.stringify(p.wiki&&p.wiki.length?p.wiki:[p.name]))+'">'+LEAF+'</div>';
 }
@@ -667,6 +669,8 @@ async function pxDetails(id,sci,name){
     px.th=okv(d.poisonous_to_humans)?!!d.poisonous_to_humans:null;
     px.tp=okv(d.poisonous_to_pets)?!!d.poisonous_to_pets:null;
     px.desc=okv(d.description)?String(d.description):null;
+    const di=d.default_image||{};const iu=di.regular_url||di.small_url||di.medium_url||di.thumbnail||di.original_url;
+    px.img=(typeof iu==='string'&&/^https?:/.test(iu)&&!/upgrade/i.test(iu))?iu:null;
   }catch(e){px.err=String(e.message||e);}
   try{
     const g=await pxGet('species-care-guide-list',{species_id:id});
@@ -732,6 +736,7 @@ async function trDetails(id,sci,name){
     t.phmin=g.ph_minimum;t.phmax=g.ph_maximum;
     t.gm=g.growth_months||null;t.bm=g.bloom_months||null;
     t.dur=ms.duration||null;t.tox=sp.toxicity||null;t.edible=ms.edible;
+    const tu=ms.image_url||d.image_url;t.img=(typeof tu==='string'&&/^https?:/.test(tu))?tu:null;
   }catch(e){t.err=String(e.message||e);}
   return t;
 }
