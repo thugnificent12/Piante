@@ -82,6 +82,15 @@ input[type=text],input[type=number],input[type=search],select{background:#3a1550
 h1,h2,.name{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:.04em;text-transform:uppercase}h1{font-size:34px}.name{font-size:19px}.btn,.tabs a{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:.05em;text-transform:uppercase}
 .lh{display:flex;align-items:center;gap:8px;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:#ff9f1c;margin-bottom:4px}.lh .li{flex:none}
 .lh{display:flex;align-items:center;gap:8px;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:#ff9f1c;margin-bottom:4px}.lh .li{flex:none}.lh.sm{font-size:13px;margin-bottom:2px}.lh.sm .li{width:17px;height:17px}.todo .lh{margin-bottom:0}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pgrid .plant{flex-direction:column;align-items:stretch;padding:8px;position:relative;gap:6px}
+.pgrid .plant a.main{flex-direction:column;align-items:stretch;gap:8px}
+.pgrid .ph{width:100%!important;height:130px!important;border-radius:12px}
+.pgrid .ph svg{width:44px;height:44px}
+.pgrid .name{white-space:normal;font-size:17px;line-height:1.1;padding:0 2px}
+.pgrid .due,.pgrid .sub{font-size:13px;padding:0 2px 2px}
+.pgrid .ic{position:absolute;top:12px;right:12px;width:34px;height:34px;background:rgba(43,15,63,.8);border-radius:50%}
+.pgrid .ic svg{stroke:#f4ecff}
 </style>
 </head>
 <body>
@@ -502,7 +511,7 @@ function homeHTML(){
   const todo=list.length?'<div class="todo"><span class="lbl">DA FARE OGGI</span>'+list.map((t,i)=>(i?'<div class="sep"></div>':'')+'<div class="row" style="justify-content:space-between"><div style="min-width:0"><div style="font-weight:600;font-size:16px">'+esc(t.title)+'</div>'+(t.sub?'<div class="sub">'+esc(t.sub)+'</div>':'')+'</div><button class="btn w" data-act="done" data-id="'+t.id+'" data-kind="'+t.kind+'">Fatto</button></div>').join('')+'</div>':'<div class="card"><b>Oggi non c\'è niente da fare.</b></div>';
   const pl=S.plants.map(p=>{const st=statusOf(p),c=CAT[p.key];const sub=(c&&c.nome!==p.name?esc(cap(c.nome))+' · ':'')+esc(st.t);return '<div class="plant"><a class="main" href="#/p/'+p.id+'/s">'+ph(p,56)+'<div style="min-width:0"><div class="name">'+esc(cap(p.name))+'</div><div class="'+(st.due?'due':'sub')+'">'+sub+'</div></div></a><button class="ic" aria-label="Cambia nome" data-act="rename" data-id="'+p.id+'">'+PENCIL+'</button></div>';}).join('');
   const nb='Notification' in window&&Notification.permission==='granted'?'<span class="badge">Notifiche attive</span>':'<button class="btn l" data-act="notif">Attiva le notifiche</button>';
-  return '<h1>Le mie piante</h1>'+wx+al+todo+'<h2>Tutte le piante ('+S.plants.length+')</h2>'+(pl||'<div class="plant" style="padding:18px;display:block"><div class="name">Ancora nessuna pianta</div><div class="sub">Tocca "+ Aggiungi pianta" qui sotto e cerca la tua.</div></div>')+'<a class="btn y" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/add">+ Aggiungi pianta</a><div class="row" style="justify-content:center">'+nb+'</div><p class="foot">Meteo: Open-Meteo (CC BY 4.0). Foto: Wikipedia e Wikimedia Commons, oppure le tue. Altre piante: Perenual e Trefle. Le notifiche arrivano quando apri l\'app.</p>';
+  return '<h1>Le mie piante</h1>'+wx+al+todo+'<h2>Tutte le piante ('+S.plants.length+')</h2>'+(pl?'<div class="pgrid">'+pl+'</div>':'<div class="plant" style="padding:18px;display:block"><div class="name">Ancora nessuna pianta</div><div class="sub">Tocca "+ Aggiungi pianta" qui sotto e cerca la tua.</div></div>')+'<a class="btn y" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="#/add">+ Aggiungi pianta</a><div class="row" style="justify-content:center">'+nb+'</div><p class="foot">Meteo: Open-Meteo (CC BY 4.0). Foto: Wikipedia e Wikimedia Commons, oppure le tue. Altre piante: Perenual e Trefle. Le notifiche arrivano quando apri l\'app.</p>';
 }
 function tabsHTML(id,on){return '<div class="tabs">'+[['s','Scheda'],['h','Salute'],['c','Crescita']].map(t=>'<a href="#/p/'+id+'/'+t[0]+'"'+(t[0]===on?' class="on"':'')+'>'+t[1]+'</a>').join('')+'</div>';}
 function headHTML(p,c){return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>'+ph(p,48)+'<div style="min-width:0"><div class="name" style="font-size:24px;white-space:normal">'+esc(cap(p.name))+'</div><div class="sub">'+(c?esc(c.sci):(p.px&&p.px.s?esc(p.px.s):(p.tr&&p.tr.s?esc(p.tr.s):'Dati di cura non disponibili')))+'</div></div></div>';}
