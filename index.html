@@ -98,6 +98,7 @@ h1,h2,.name{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:.
 <div id="splash"><div class="box t"><img src="splash.jpg" alt="My Grass is Always Greener Than Yours!"><button data-act="enter" aria-label="Entra nelle piante"></button></div><div class="box s"><img src="splash916.jpg" alt="My Grass is Always Greener Than Yours!"><button data-act="enter" aria-label="Entra nelle piante"></button></div></div>
 <div id="app"></div>
 <input type="file" accept="image/*" id="file" hidden>
+<input type="file" accept="image/*" id="idf" hidden>
 <input type="file" accept=".json,application/json" id="bk" hidden>
 <div id="modal"><div id="sheet"></div></div>
 <script src="catalogo.js"></script>
@@ -610,7 +611,30 @@ function crescitaHTML(p,c){
   return h;
 }
 function addHTML(){
-  return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a><h1 style="font-size:24px">Aggiungi pianta</h1></div><input type="search" id="q" placeholder="Nome della pianta (italiano, inglese, latino)"><div id="res" style="display:flex;flex-direction:column;gap:8px"><p class="sub">Cerco nei nomi di Wikipedia. Le piante nuove hanno nome e foto, ma i dati di cura non ci sono finché non li verifichiamo.</p></div>';
+  return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a><h1 style="font-size:24px">Aggiungi pianta</h1></div><input type="search" id="q" placeholder="Nome della pianta (italiano, inglese, latino)"><button class="btn l" data-act="idfoto" style="align-self:flex-start">Riconosci da una foto</button><div id="res" style="display:flex;flex-direction:column;gap:8px"><p class="sub">Cerco nei nomi di Wikipedia. Le piante nuove hanno nome e foto, ma i dati di cura non ci sono finché non li verifichiamo.</p></div>';
+}
+
+/* ================= RICONOSCIMENTO DA FOTO (Pl@ntNet) ================= */
+const PNKEY='2b1036NxN6RPPWaWzcEyd9O';
+function shrinkImg(file){return new Promise((ok,ko)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?ok(b):ko(0),'image/jpeg',.85);};im.onerror=()=>ko(0);im.src=u;});}
+function pnDecide(j){
+  const R=(j&&j.results)||[];if(!R.length)return null;
+  const a=R[0],b=R[1];
+  if(a.score>=0.6&&(!b||a.score-b.score>=0.25))return a;
+  return null;
+}
+async function idPhoto(file){
+  const box=$('#res');box.innerHTML='<p class="sub">Guardo la foto...</p>';
+  try{
+    const blob=await shrinkImg(file),fd=new FormData();fd.append('images',blob,'pianta.jpg');fd.append('organs','auto');
+    const r=await fetch('https://my-api.plantnet.org/v2/identify/all?api-key='+PNKEY+'&lang=it&nb-results=3&include-related-images=false',{method:'POST',body:fd});
+    if(r.status===404){box.innerHTML='<div class="warn">Non riconosco questa pianta. Prova con una foto più vicina, di una foglia o di un fiore.</div>';return;}
+    if(!r.ok)throw r.status;
+    const j=await r.json(),a=pnDecide(j);
+    if(!a){box.innerHTML='<div class="warn">Non sono sicuro del nome, e non voglio darti un nome sbagliato. Prova con un\'altra foto: più vicina, di una foglia o di un fiore.</div>';return;}
+    const sci=a.species.scientificNameWithoutAuthor,cn=(a.species.commonNames||[])[0]||'';
+    box.innerHTML='<div class="card"><div class="sub">Sono abbastanza sicuro che sia:</div><div class="name" style="font-size:22px">'+esc(cn||sci)+'</div><div class="sub">'+esc(sci)+'</div></div><button class="btn" data-act="idgo" data-s="'+esc(sci)+'">Cerca questa pianta</button>';
+  }catch(err){box.innerHTML='<div class="warn">Non riesco a collegarmi al riconoscimento. Riprova tra poco.</div>';}
 }
 /* ================= GUIDE DI POTATURA ================= */
 const POTA={
@@ -908,6 +932,8 @@ document.addEventListener('click',async e=>{
   if(a==='del'&&p){openModal('<h2 style="margin:0">Eliminare '+esc(cap(p.name))+'?</h2><div class="row"><button class="btn r" data-act="delok" data-id="'+p.id+'">Sì, elimina</button><button class="btn l" data-act="close">No</button></div>');return;}
   if(a==='delok'&&p){S.plants=S.plants.filter(x=>x.id!==p.id);save();closeModal();location.hash='#/';return;}
   if(a==='pickphoto'&&p){photoId=p.id;$('#file').click();return;}
+  if(a==='idfoto'){$('#idf').click();return;}
+  if(a==='idgo'){const q=b.dataset.s;$('#q').value=q;searchPlants(q);return;}
   if(a==='bksave'){
     try{const d=new Date(),n='piante-copia-'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+'.json';
       const u=URL.createObjectURL(new Blob([JSON.stringify(S)],{type:'application/json'}));
@@ -947,6 +973,7 @@ document.addEventListener('change',e=>{
   const b=e.target;if(b.dataset&&b.dataset.act==='outdoor'){const p=S.plants.find(x=>x.id===b.dataset.id);if(p){p.outdoor=b.checked;save();}}
 });
 let tmr=null,photoId=null;
+$('#idf').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)idPhoto(f);});
 $('#bk').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
   try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.plants))throw 0;
     window._bkd=d;openModal('<h2 style="margin:0">Ripristinare la copia?</h2><p>La copia ha '+d.plants.length+' piante. Prenderà il posto di quelle che hai adesso ('+S.plants.length+').</p><div class="row"><button class="btn" data-act="bkok">Sì, ripristina</button><button class="btn l" data-act="close">No</button></div>');
