@@ -653,6 +653,11 @@ async function pxSearch(q){
       return '<button class="pick" data-act="addx" data-id="'+esc(x.id)+'" data-n="'+esc(x.common_name||sci)+'" data-s="'+esc(sci)+'"><b>'+esc(cap(x.common_name||sci))+'</b><span class="sub">'+esc(sci)+'</span></button>';
     }).join(''):'<p class="sub">Perenual non ha trovato niente.</p>';
   }catch(e){
+    if(/429/.test(String(e.message||''))){
+      box.innerHTML='<p class="sub">Perenual ha finito le richieste di oggi (ne ha poche al giorno). Riprova domani. Intanto cerco in Trefle, qui sotto.</p>';
+      if($('#trres'))trSearch(q);
+      return;
+    }
     box.innerHTML='<p class="sub">Non riesco a collegarmi a Perenual ('+esc(e.message||'errore')+'). Può essere che il sito non permetta le richieste da un\'app web, o che le 100 richieste di oggi siano finite.</p>';
   }
 }
