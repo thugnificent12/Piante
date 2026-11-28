@@ -75,6 +75,7 @@ body{background:#2b0f3f;color:#fff1e6}a{color:#ff9f1c}
 .btn.y{background:#7CFC1A;color:#1d0b28}
 .ph,.hero{background-color:#6a2a80}.due{color:#ffb347}
 .alert{background:#5c3410;color:#ffe9c2}.badge{background:#5e2a78;color:#ffe3b3}
+textarea{width:100%;border:1px solid #7a3a98;border-radius:14px;padding:12px 14px;background:#3a1550;color:#fff1e6;box-sizing:border-box;font:inherit;resize:vertical;margin-top:6px}
 input[type=text],input[type=number],input[type=search],select{background:#3a1550;color:#fff1e6;border-color:#7a3a98}
 #sheet{background:#3a1550;color:#fff1e6}
 .name{color:#A8F000}
@@ -527,6 +528,16 @@ function homeHTML(){
 function tabsHTML(id,on){return '<div class="tabs">'+[['s','Scheda'],['h','Salute'],['c','Crescita']].map(t=>'<a href="#/p/'+id+'/'+t[0]+'"'+(t[0]===on?' class="on"':'')+'>'+t[1]+'</a>').join('')+'</div>';}
 function headHTML(p,c){return '<div class="row"><a href="#/" aria-label="Indietro" class="ic" style="background:#fff;border-radius:22px;text-decoration:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1F2A22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>'+ph(p,48)+'<div style="min-width:0"><div class="name" style="font-size:24px;white-space:normal">'+esc(cap(p.name))+'</div><div class="sub">'+(c?esc(c.sci):(p.px&&p.px.s?esc(p.px.s):(p.tr&&p.tr.s?esc(p.tr.s):'Dati di cura non disponibili')))+'</div></div></div>';}
 const LIC={"Dove sta meglio": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#FFD23F\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1\"/></svg>", "Acqua": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#3DB8FF\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z\"/></svg>", "Che acqua": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#5CE1E6\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 11h11v6a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z\"/><path d=\"M14 13l6-3M14 11l5-4\"/><path d=\"M3 11l1-2h9l1 2\"/></svg>", "Terra": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#D98A4E\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 20h18\"/><path d=\"M5 20c0-4 3-6 7-6s7 2 7 6\"/><path d=\"M12 14V8M12 8c-3 0-4-2-4-4 3 0 4 1 4 4zM12 10c2 0 4-1 4-3-2 0-4 1-4 3z\"/></svg>", "Concime": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#FF5FA2\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 21V11\"/><path d=\"M12 11c-5 0-7-3-7-6 5 0 7 2 7 6zM12 14c4 0 6-2 6-5-4 0-6 2-6 5z\"/><path d=\"M5 21h14\"/></svg>", "Tipo": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#B794FF\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M3 10h18M8 3v4M16 3v4\"/></svg>", "Temperatura": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#FF5A5A\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10 14V5a2 2 0 0 1 4 0v9a4 4 0 1 1-4 0z\"/><path d=\"M12 9v7\"/></svg>", "Potatura": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#FF9F1C\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"6\" cy=\"6\" r=\"3\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M8.5 8l11 9M8.5 16l11-9\"/></svg>", "Rinvaso": "<svg class=\"li\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#E8743B\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 9h14l-2 11H7z\"/><path d=\"M4 9h16\"/><path d=\"M12 4v3M10.5 5.5L12 4l1.5 1.5\"/></svg>"};
+function placeHTML(p,c){
+  const ch=(t,col)=>'<span style="display:inline-block;background:'+col+';color:#2b0f3f;font-weight:700;border-radius:14px;padding:4px 11px;margin:0 6px 6px 0;font-size:14px">'+t+'</span>';
+  let w=c.outdoor?ch('Fuori: terrazzo o giardino','#A8F000'):ch('Dentro casa','#ffd23f');
+  if(c.outdoor&&c.tMin!=null&&c.tMin>=0)w+=ch('Dentro d\'inverno','#ff9f1c');
+  const m=String(c.luce||'').match(/(\d+(?:-\d+)?)\s*ore/);
+  const sun=/sole pieno/i.test(c.luce)?'Sole':/ombra/i.test(c.luce)&&!/sole/i.test(c.luce)?'Ombra':/mezz/i.test(c.luce)?'Mezz\'ombra':/non diretta|filtrata|diretto/i.test(c.luce)?'Luce senza sole diretto':'';
+  if(sun)w+=ch(sun,'#f4a6d7');
+  if(m)w+=ch('Ore di sole: '+m[1],'#9ad7ff');
+  return '<div class="card"><div class="lbl lh">'+(LIC['Dove sta meglio']||'')+'<span>Dove metterla</span></div><div style="margin:4px 0 6px">'+w+'</div><div class="val">'+esc(c.luce)+'</div></div>';
+}
 function r(l,v){return '<div class="card"><div class="lbl lh">'+(LIC[l]||'')+'<span>'+l+'</span></div><div class="val">'+esc(v)+'</div></div>';}
 
 function schedaHTML(p,c){
@@ -542,10 +553,11 @@ function schedaHTML(p,c){
   }else{
     h+='<div class="'+(c.verificata?'badge':'badge o')+'" style="align-self:flex-start">'+(c.verificata?'Dati controllati su fonti':'Dati generali: da verificare')+'</div>';
     if(c.nota)h+='<div class="alert">'+esc(c.nota)+'</div>';
-    h+=r('Dove sta meglio',c.luce)+r('Acqua',c.acqua)+r('Che acqua',c.tipoAcqua)+r('Terra',c.terra)+r('Concime',c.concime)+r('Tipo',c.tipo)+r('Temperatura',c.temp+(c.tMinEst?' (valore stimato)':''))+r('Potatura',c.potatura)+(c.pota?'<button class="btn l" data-act="pota" data-id="'+p.id+'">✂ Come si pota (con disegno)</button>':'')+r('Rinvaso',c.rinvaso);
+    h+=placeHTML(p,c)+r('Acqua',c.acqua)+r('Che acqua',c.tipoAcqua)+r('Terra',c.terra)+r('Concime',c.concime)+r('Tipo',c.tipo)+r('Temperatura',c.temp+(c.tMinEst?' (valore stimato)':''))+r('Potatura',c.potatura)+(c.pota?'<button class="btn l" data-act="pota" data-id="'+p.id+'">✂ Come si pota (con disegno)</button>':'')+r('Rinvaso',c.rinvaso);
     if(c.tossica)h+='<div class="warn"><b>Attenzione:</b> '+esc(c.tossica)+'</div>';
     if(c.fonti&&c.fonti.length)h+='<p class="foot">Fonti: '+c.fonti.map(f=>'<a href="'+esc(f[1])+'" target="_blank" rel="noopener">'+esc(f[0])+'</a>').join(' · ')+'</p>';
   }
+  h+='<div class="card"><div class="lbl lh">'+(LIC['Tipo']||'')+'<span>Le mie note</span></div><textarea id="nt" data-id="'+p.id+'" rows="3" placeholder="Scrivi qui (es. comprata a maggio)">'+esc(p.note||'')+'</textarea></div>';
   const wi=waterInterval(p);
   h+='<h2>Come la tengo</h2><div class="card">'
    +'<label class="tg"><input type="checkbox" data-act="outdoor" data-id="'+p.id+'"'+(p.outdoor?' checked':'')+'> Sta all\'aperto (balcone o giardino)</label>'
@@ -941,6 +953,7 @@ $('#bk').addEventListener('change',async e=>{const f=e.target.files[0];e.target.
   }catch(err){toast('Questo file non è una copia delle piante.');}});
 $('#file').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';const p=S.plants.find(x=>x.id===photoId);if(!f||!p)return;try{p.photo=await shrink(f,360);save();rerender();}catch(err){toast('Non riesco a leggere la foto.');}});
 document.addEventListener('input',e=>{
+  if(e.target.id==='nt'){const q=S.plants.find(x=>x.id===e.target.dataset.id);if(q){q.note=e.target.value;save();}return;}
   if(e.target.id==='city'){clearTimeout(tmr);const v=e.target.value;tmr=setTimeout(()=>searchCity(v),350);}
   if(e.target.id==='q'){clearTimeout(tmr);const v=e.target.value;tmr=setTimeout(()=>searchPlants(v),400);}
 });
