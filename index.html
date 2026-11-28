@@ -488,7 +488,9 @@ function r(l,v){return '<div class="card"><div class="lbl lh">'+(LIC[l]||'')+'<s
 
 function schedaHTML(p,c){
   let h=headHTML(p,c)+tabsHTML(p.id,'s');
-  if(!c&&p.tr){
+  if(!c&&p.px&&pxUseful(p.px)){
+    h+=pxHTML(p.px);
+  }else if(!c&&p.tr){
     h+=trHTML(p.tr);
   }else if(!c&&p.px){
     h+=pxHTML(p.px);
@@ -767,21 +769,37 @@ function trHTML(t){
   return h;
 }
 
+function pxUseful(px){return !!px&&!px.err&&!!(px.w||px.wb||(px.sun&&px.sun.length)||px.cy||(px.pm&&px.pm.length)||px.desc||(px.g&&px.g.length));}
+function pxWater(o,px){
+  const m=px.wb&&String(px.wb).match(/(\d+)\s*-\s*(\d+)/);const m1=!m&&px.wb&&String(px.wb).match(/(\d+)/);
+  if(m&&/day/i.test(px.wb))o.waterDays=Math.round((+m[1]+ +m[2])/2);else if(m1&&/day/i.test(px.wb))o.waterDays=+m1[1];
+}
+async function pxMatch(sci,name){
+  if(!sci)return null;
+  try{
+    const j=await pxGet('species-list',{q:sci});
+    const m=(j.data||[]).find(x=>{const t=Array.isArray(x.scientific_name)?x.scientific_name[0]:x.scientific_name;return norm(t||'')===norm(sci);});
+    if(!m)return null;
+    const px=await pxDetails(m.id,sci,name);
+    return pxUseful(px)?px:null;
+  }catch(e){return null;}
+}
 async function dbSearch(q){
   const box=$('#dbres');if(!box||q.length<2)return;
-  box.innerHTML='<p class="sub">Cerco...</p>';
-  const out=[];const seen={};
-  const [pr,tr]=await Promise.allSettled([pxGet('species-list',{q:q}),trGet('plants/search',{q:q})]);
-  if(pr.status==='fulfilled'){(pr.value.data||[]).slice(0,10).forEach(x=>{
-    const sci=Array.isArray(x.scientific_name)?x.scientific_name[0]:(x.scientific_name||'');
-    const k=norm(sci||x.common_name||'');if(!k||seen[k])return;seen[k]=1;
-    out.push({src:'x',id:x.id,n:x.common_name||sci,s:sci});});}
-  if(tr.status==='fulfilled'){(tr.value.data||[]).slice(0,10).forEach(x=>{
-    const sci=x.scientific_name||'';const k=norm(sci||x.common_name||'');if(!k||seen[k])return;seen[k]=1;
-    out.push({src:'t',id:x.id,n:x.common_name||sci,s:sci});});}
+  box.innerHTML='<p class="sub">Cerco nel database grande...</p>';
+  let out=[];
+  try{
+    const j=await trGet('plants/search',{q:q});
+    out=(j.data||[]).slice(0,10).map(x=>({src:'t',id:x.id,n:x.common_name||x.scientific_name||'',s:x.scientific_name||''}));
+  }catch(e){}
+  if(!out.length){
+    try{
+      const j=await pxGet('species-list',{q:q});
+      out=(j.data||[]).slice(0,10).map(x=>{const sci=Array.isArray(x.scientific_name)?x.scientific_name[0]:(x.scientific_name||'');return{src:'x',id:x.id,n:x.common_name||sci,s:sci};});
+    }catch(e){}
+  }
   if(q!==($('#q')||{}).value)return;
-  if(!out.length){box.innerHTML='<p class="sub">'+(pr.status==='rejected'&&tr.status==='rejected'?'Non riesco a cercare adesso. Riprova più tardi.':'Non ho trovato niente.')+'</p>';return;}
-  box.innerHTML=out.slice(0,14).map(x=>'<button class="pick" data-act="'+(x.src==='x'?'addx':'addt')+'" data-id="'+esc(x.id)+'" data-n="'+esc(x.n)+'" data-s="'+esc(x.s)+'"><b>'+esc(cap(x.n))+'</b><span class="sub">'+esc(x.s)+'</span></button>').join('');
+  box.innerHTML=out.filter(x=>x.n).map(x=>'<button class="pick" data-act="'+(x.src==='x'?'addx':'addt')+'" data-id="'+esc(x.id)+'" data-n="'+esc(x.n)+'" data-s="'+esc(x.s)+'"><b>'+esc(cap(x.n))+'</b><span class="sub">'+esc(x.s)+'</span></button>').join('');
 }
 async function searchPlants(q){
   const box=$('#res');if(q.trim().length<2){return;}
@@ -796,7 +814,8 @@ async function searchPlants(q){
   }
   if(q!==$('#q').value)return;
   const seen={};const wiki=hits.filter(x=>{const f=findCat(x.t)[0];if(f&&norm(x.t)===norm(CAT[f].sci||''))return false;if(seen[x.t])return false;seen[x.t]=1;return true;}).slice(0,10).map(x=>'<button class="pick" data-act="addp" data-t="'+esc(x.t)+'"><b>'+esc(x.t)+'</b><span class="sub">Senza scheda di cura. '+esc(x.s.slice(0,70))+'</span></button>').join('');
-  box.innerHTML=(mine+wiki||'<p class="sub">Niente trovato.</p>')+'<button class="btn l" style="margin-top:10px" data-act="dbsearch">Cerca altre piante (database grande)</button><div id="dbres"></div>';
+  box.innerHTML=mine+'<div id="dbres"></div>'+wiki;
+  dbSearch(q);;
 }
 
 function render(){
@@ -841,8 +860,10 @@ document.addEventListener('click',async e=>{
     const id=b.dataset.id,n=b.dataset.n,sci=b.dataset.s;
     b.disabled=true;b.querySelector('.sub').textContent='Leggo i dati...';
     const tr=await trDetails(id,sci,n);
+    const px=await pxMatch(sci||tr.s,n);
     S.next=(S.next||100)+1;
     const o={id:'p'+S.next,key:'custom',name:n,wiki:[sci||n],outdoor:false,lastWater:todayStr(),lastFert:null,lastPrune:null,lastCheck:null,waterDays:null,growth:[],issues:[],tr:tr};
+    if(px){o.px=px;pxWater(o,px);}
     S.plants.push(o);save();location.hash='#/p/'+o.id+'/s';return;
   }
   if(a==='pxsearch'){pxSearch(($('#q').value||'').trim());return;}
