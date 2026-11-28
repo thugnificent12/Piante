@@ -81,6 +81,7 @@ input[type=text],input[type=number],input[type=search],select{background:#3a1550
 @font-face{font-family:Anton;src:url(anton.woff) format('woff');font-display:swap}
 h1,h2,.name{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:.04em;text-transform:uppercase}h1{font-size:34px}.name{font-size:19px}.btn,.tabs a{font-family:Anton,Impact,sans-serif;font-weight:400;letter-spacing:.05em;text-transform:uppercase}
 .lh{display:flex;align-items:center;gap:8px;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:#ff9f1c;margin-bottom:4px}.lh .li{flex:none}
+.lh{display:flex;align-items:center;gap:8px;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:#ff9f1c;margin-bottom:4px}.lh .li{flex:none}.lh.sm{font-size:13px;margin-bottom:2px}.lh.sm .li{width:17px;height:17px}.todo .lh{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -508,13 +509,25 @@ function schedaHTML(p,c){
   h+='<div class="row" style="flex-wrap:wrap"><button class="btn l" data-act="rename" data-id="'+p.id+'">Cambia nome</button><button class="btn l" data-act="pickphoto" data-id="'+p.id+'">Cambia foto</button>'+(p.photo?'<button class="btn l" data-act="rmphoto" data-id="'+p.id+'">Togli la mia foto</button>':'')+'<button class="btn r" data-act="del" data-id="'+p.id+'">Elimina</button></div>';
   return h;
 }
+const SIC={
+stato:'<svg class="li" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5A5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-8-5.5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 5.5-8 11-8 11z"/></svg>',
+bug:'<svg class="li" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5A5A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="8" height="11" rx="4"/><path d="M12 8V5M9 5l3 0 3 0M4 12h4M16 12h4M5 18l3-2M19 18l-3-2M5 6l3 3M19 6l-3 3"/></svg>',
+blk:'<svg class="li" width="20" height="20" viewBox="0 0 24 24" fill="#0d0d0d" stroke="#8f8f8f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-9 5-14 15-14 0 10-5 15-14 15"/><path d="M5 19L14 10" stroke="#8f8f8f"/></svg>',
+dots:'<svg class="li" width="20" height="20" viewBox="0 0 24 24" fill="#FFD23F" stroke="none" aria-hidden="true"><circle cx="8" cy="9" r="2.2"/><circle cx="16" cy="8" r="1.6"/><circle cx="14" cy="16" r="3"/></svg>',
+leaf:'<svg class="li" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFD23F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-9 5-14 15-14 0 10-5 15-14 15"/><path d="M5 19L14 10"/></svg>',
+spot:'<svg class="li" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B794FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="8" r="2"/><circle cx="14" cy="16" r="4"/></svg>',
+alert:'<svg class="li" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF9F1C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/></svg>',
+causa:'<svg class="li" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3DB8FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>',
+fare:'<svg class="li" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5FA2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>'};
+function pic(t){t=t.toLowerCase();if(/insett|ragnat|cotone|afid|cocciniglia|pidocch|vermi|bruc/.test(t))return SIC.bug;if(/foglie nere|foglia nera/.test(t))return SIC.blk;if(/macch\w* giall/.test(t))return SIC.dots;if(/macch|muffa|ruggine|oidio|marcio|nero|nere/.test(t))return SIC.spot;if(/foglie|foglia|punte|appass|secc|giall/.test(t))return SIC.leaf;return SIC.alert;}
+function lh(ic,t){return '<div class="lh">'+ic+'<span>'+t+'</span></div>';}
 function saluteHTML(p,c){
   let h=headHTML(p,c)+tabsHTML(p.id,'h');
   const open=p.issues.filter(i=>!i.done);
-  h+='<div class="todo" style="background:'+(open.length?'#9A5B00':'#5e2a78')+'"><span class="lbl">STATO</span><span style="font-size:22px;font-weight:700">'+(open.length?'Problemi segnati: '+open.length:'Nessun problema segnato')+'</span><span class="sub">Ultimo controllo: '+fmtAgo(p.lastCheck)+'</span><div><button class="btn w" data-act="done" data-id="'+p.id+'" data-kind="controllo">Controllata oggi, sta bene</button></div></div>';
+  h+='<div class="todo" style="background:'+(open.length?'#9A5B00':'#5e2a78')+'">'+lh(SIC.stato,'Stato')+'<span style="font-size:22px;font-weight:700">'+(open.length?'Problemi segnati: '+open.length:'Nessun problema segnato')+'</span><span class="sub">Ultimo controllo: '+fmtAgo(p.lastCheck)+'</span><div><button class="btn w" data-act="done" data-id="'+p.id+'" data-kind="controllo">Controllata oggi, sta bene</button></div></div>';
   if(open.length)h+=open.map((i,k)=>'<div class="card"><b>'+esc(i.t)+'</b><div class="sub">Segnato '+fmtAgo(i.d)+'</div><button class="btn l" style="margin-top:6px" data-act="resolve" data-id="'+p.id+'" data-k="'+p.issues.indexOf(i)+'">Risolto</button></div>').join('');
   if(c){
-    h+='<h2>Se vedi questo</h2>'+c.problemi.map((q,k)=>'<div class="card"><b>'+esc(q[0])+'</b><div class="sub">Causa: '+esc(q[1])+'</div><div class="val">Cosa fare: '+esc(q[2])+'</div><button class="btn l" style="margin-top:6px" data-act="issue" data-id="'+p.id+'" data-k="'+k+'">Ce l\'ha</button></div>').join('');
+    h+='<h2>Se vedi questo</h2>'+c.problemi.map((q,k)=>'<div class="card">'+lh(pic(q[0]),esc(q[0]))+'<div class="val">'+lh(SIC.causa,'Causa').replace('class="lh"','class="lh sm"')+esc(q[1])+'</div><div class="val" style="margin-top:8px">'+lh(SIC.fare,'Cosa fare').replace('class="lh"','class="lh sm"')+esc(q[2])+'</div><button class="btn l" style="margin-top:6px" data-act="issue" data-id="'+p.id+'" data-k="'+k+'">Ce l\'ha</button></div>').join('');
   }else h+='<div class="warn">Non ho una lista di problemi verificata per questa pianta.</div>';
   return h;
 }
