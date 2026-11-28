@@ -299,17 +299,27 @@ if(window.EXTRA)for(const k in window.EXTRA)if(!CAT[k])CAT[k]=window.EXTRA[k];
     'menta-piperita':MENTA,'menta-verde':MENTA,'menta-arancio':MENTA,'menta-cioccolato':MENTA,'menta-sweet-lemon':MENTA,
     'alloro':'Tossico per cani, gatti e cavalli (eugenolo e altri oli): vomito e diarrea. Se mangiano foglie intere può ostruirsi l\'intestino.'+F,
     'limone':AGR,
-    'arancio':'Tossico per i gatti; come per il limone, gli agrumi danno vomito e diarrea.'+F,
+    'arancio':'Tossico per cani e gatti; come per il limone, gli agrumi danno vomito e diarrea.'+F,
     'mandarino':AGR2,'kumquat':AGR2,
     'erba-cipollina':'Tossica per cani, gatti e cavalli: può distruggere i globuli rossi (anemia). Segni: vomito, debolezza, battito alto, sangue nelle urine.'+F,
     'prezzemolo':'Tossico per cani, gatti e cavalli (furanocumarine): serve una quantità grande per dare scottature e dermatite al sole.'+F,
     'citronella':'Tossica per cani, gatti e cavalli (oli essenziali): a cani e gatti dà mal di stomaco.'+F,
     'dalia':'Tossica per cani, gatti e cavalli: lievi disturbi di stomaco e leggera dermatite.'+F,
-    'origano':'Tossico per i gatti: tienilo lontano da loro.'+F,
-    'maggiorana':'Tossica per i gatti: tienila lontana da loro.'+F,
-    'dragoncello':'Tossico per i gatti: tienilo lontano da loro.'+F,
-    'primula':'Tossica per i gatti: tienila lontana da loro.'+F
+    'origano':'Tossico per cani e gatti: tienilo lontano da loro.'+F,
+    'maggiorana':'Tossica per cani e gatti: tienila lontana da loro.'+F,
+    'dragoncello':'Tossico per cani e gatti: tienilo lontano da loro.'+F,
+    'primula':'Tossica per cani e gatti: tienila lontana da loro.'+F
   };
+  const GEN=['Tossica se mangiata: tienila lontana da cani, gatti e bambini.','Tossica se mangiata: lontano da cani e gatti.'];
+  const keep=o=>(o&&GEN.indexOf(o)<0)?' '+o:'';
+  const BOTH=['pothos','philodendron-scandens','ficus-benjamina','ficus-elastica','dracena-marginata','tronchetto-della-felicita','spatifillo','dieffenbachia','aglaonema','schefflera','yucca','anthurium','syngonium','alocasia','tradescantia','edera','scindapsus','monstera','monstera-adansonii','strelitzia','clivia','cycas','begonia','ciclamino','stella-di-natale','kalanchoe','gardenia','lantana','geranio','aloe-vera','albero-di-giada','pomodoro','fico','oleandro','azalea','tulipano','narciso','giacinto','ortensia','bosso'];
+  const NOTSURE=['ficus-lyrata','ficus-ginseng','zamioculcas','croton','rosario','agave','corona-di-spine','bougainvillea','mandevilla','agapanto','rhaphidophora-tetrasperma'];
+  for(const k of BOTH){const c=CAT[k];if(!c)continue;c.tossica='Tossica per cani e gatti.'+F+keep(c.tossica);}
+  if(CAT.giglio)CAT.giglio.tossica='Tossico per i gatti.'+F+keep(CAT.giglio.tossica);
+  for(const k of NOTSURE){const c=CAT[k];if(c&&c.tossica)c.tossica+=' Non l\'ho trovata nell\'elenco ASPCA: l\'avviso resta per prudenza.';}
+  T.lavanda='Tossica per cani, gatti e cavalli: nausea, vomito e perdita di appetito.'+F;
+  T.pervinca='Tossica per cani, gatti e cavalli: vomito, feci molli, pressione molto bassa, tremori, convulsioni; può essere mortale.'+F;
+  T.sansevieria='Tossica per cani e gatti (saponine): nausea, vomito e diarrea.'+F;
   for(const k in T)if(CAT[k])CAT[k].tossica=T[k];
 })();
 const POTA0={'basilico':'cima','basilico-thai':'cima','basilico-liquirizia':'cima','basilico-vaniglia':'cima','menta-arancio':'cima','menta-cioccolato':'cima','menta-sweet-lemon':'cima','menta-piperita':'cima','menta-verde':'cima','pervinca':'cima','incenso':'cima','monstera':'nodo','nepenthes':'nodo','lavanda':'legno','sansevieria':'secche','ferocactus':'nopota'};
