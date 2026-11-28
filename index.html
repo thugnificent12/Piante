@@ -43,7 +43,7 @@ button,input,select{font:inherit}
 .hero{height:200px;border-radius:20px;background:#CFE3D3 center/cover no-repeat;display:flex;align-items:center;justify-content:center}
 .hero.has svg{display:none}
 .alert{background:#FFF4DC;border-radius:14px;padding:12px 14px;font-size:15px;line-height:1.4}
-.warn{background:#FBE3DC;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.4}
+.warn{background:#FBE3DC;color:#4a1a12;border-radius:14px;padding:12px 14px;font-size:14px;line-height:1.4}
 .badge{display:inline-block;font-size:12px;font-weight:600;border-radius:10px;padding:3px 8px;background:#E7EFE9;color:#2F6B4F}
 .badge.o{background:#FFF4DC;color:#7A4A00}
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:9}
@@ -280,6 +280,29 @@ const CAT={
 CAT['menta-piperita']={...MINT,nome:'Menta piperita',alias:['mentha piperita','menta','peppermint'],nota:'Cure generali della menta.'};
 CAT['menta-verde']={...MINT,nome:'Menta verde',sci:'Mentha spicata',wiki:['Mentha spicata','Menta verde'],alias:['mentha spicata','spearmint','menta romana'],nota:'Cure generali della menta.'};
 if(window.EXTRA)for(const k in window.EXTRA)if(!CAT[k])CAT[k]=window.EXTRA[k];
+/* Tossicità controllata sull'elenco ASPCA (aspca.org, piante tossiche e non tossiche). */
+(function(){
+  const F=' (Fonte: ASPCA)';
+  const MENTA='Tossica per cani, gatti e cavalli (oli essenziali): se ne mangiano tanta, vomito e diarrea.'+F;
+  const AGR='Gli agrumi sono tossici per cani e gatti (oli essenziali e psoraleni): vomito, diarrea, abbattimento, a volte dermatite. Il frutto si può mangiare, il resto della pianta e le bucce danno problemi.'+F;
+  const AGR2='Non ho trovato la scheda ASPCA di questo agrume. Limone, arancio e lime sono tossici per cani e gatti: per prudenza trattalo allo stesso modo.';
+  const T={
+    'menta-piperita':MENTA,'menta-verde':MENTA,'menta-arancio':MENTA,'menta-cioccolato':MENTA,'menta-sweet-lemon':MENTA,
+    'alloro':'Tossico per cani, gatti e cavalli (eugenolo e altri oli): vomito e diarrea. Se mangiano foglie intere può ostruirsi l\'intestino.'+F,
+    'limone':AGR,
+    'arancio':'Tossico per i gatti; come per il limone, gli agrumi danno vomito e diarrea.'+F,
+    'mandarino':AGR2,'kumquat':AGR2,
+    'erba-cipollina':'Tossica per cani, gatti e cavalli: può distruggere i globuli rossi (anemia). Segni: vomito, debolezza, battito alto, sangue nelle urine.'+F,
+    'prezzemolo':'Tossico per cani, gatti e cavalli (furanocumarine): serve una quantità grande per dare scottature e dermatite al sole.'+F,
+    'citronella':'Tossica per cani, gatti e cavalli (oli essenziali): a cani e gatti dà mal di stomaco.'+F,
+    'dalia':'Tossica per cani, gatti e cavalli: lievi disturbi di stomaco e leggera dermatite.'+F,
+    'origano':'Tossico per i gatti: tienilo lontano da loro.'+F,
+    'maggiorana':'Tossica per i gatti: tienila lontana da loro.'+F,
+    'dragoncello':'Tossico per i gatti: tienilo lontano da loro.'+F,
+    'primula':'Tossica per i gatti: tienila lontana da loro.'+F
+  };
+  for(const k in T)if(CAT[k])CAT[k].tossica=T[k];
+})();
 const POTA0={'basilico':'cima','basilico-thai':'cima','basilico-liquirizia':'cima','basilico-vaniglia':'cima','menta-arancio':'cima','menta-cioccolato':'cima','menta-sweet-lemon':'cima','menta-piperita':'cima','menta-verde':'cima','pervinca':'cima','incenso':'cima','monstera':'nodo','nepenthes':'nodo','lavanda':'legno','sansevieria':'secche','ferocactus':'nopota'};
 for(const k in POTA0)if(CAT[k]&&!CAT[k].pota)CAT[k].pota=POTA0[k];
 const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
