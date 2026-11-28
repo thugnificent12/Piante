@@ -307,7 +307,7 @@ const L=[
  ['Ibisco',['hibiscus rosa-sinensis','hibiscus','ibisco cinese','rosa cinese'],'Hibiscus rosa-sinensis','arbusto',3,8,8,0,null,{luce:'Sole o luce molto forte.',acqua:'Terra sempre un po\' umida in estate: ha molta sete.'}],
  ['Bougainvillea',['bougainvillea','buganvillea'],'Bougainvillea glabra','arbusto',4,14,7,1,X1,{luce:'Sole pieno, almeno 6 ore.',acqua:'Quando la terra è asciutta per i primi 3 cm. Fiorisce meglio un po\' all\'asciutto.',tipo:'Rampicante. Perde le foglie con il freddo. Teme il gelo.'}],
  ['Mandevilla',['mandevilla','dipladenia','dipladenia'],'Mandevilla sanderi','arbusto',4,14,10,1,X1,{luce:'Sole pieno o luce molto forte.',tipo:'Rampicante. Fiorisce da primavera a autunno; teme il freddo.'}],
- ['Lantana',['lantana camara','lantana'],'Lantana camara','arbusto',4,14,0,1,X1,{luce:'Sole pieno.',tipo:'Arbusto fiorito: da primavera ad autunno. Teme il gelo.'}],
+ ['Lantana',['lantana camara','lantana'],'Lantana camara','arbusto',4,14,5,1,X1,{luce:'Sole pieno.',tipo:'Arbusto fiorito: da primavera ad autunno. Teme il gelo.'}],
  ['Geranio',['pelargonium','geranio','geranio zonale','pelargonium zonale','geranio edera'],'Pelargonium zonale','arbusto',4,14,3,1,X1,{luce:'Sole pieno o mezz\'ombra luminosa.',acqua:'Quando i primi 2 cm di terra sono asciutti. Meglio poco che troppo.',potatura:'Togli i fiori e le foglie appassiti. A fine inverno accorcia i rami.',tipo:'Fiorisce da primavera ad autunno. Teme il gelo: in inverno riparalo.'}],
  ['Fucsia',['fuchsia','fucsia'],'Fuchsia × hybrida','arbusto',3,14,0,1,null,{luce:'Mezz\'ombra luminosa. Non regge il sole forte.',tipo:'Arbusto fiorito da primavera ad autunno. Teme il caldo forte e il gelo.'}],
  /* grasse e cactus */
@@ -328,7 +328,7 @@ const L=[
  ['Agave',['agave americana','agave','century plant'],'Agave americana','grassa',14,45,-3,1,X3,{luce:'Sole pieno.',tipo:'Perenne sempreverde. Resiste al freddo se la terra è asciutta.'}],
  ['Gasteria',['gasteria','lingua di bue','ox tongue'],'Gasteria carinata','grassa',14,30,5,0,null,{luce:'Luce forte, senza sole diretto forte.'}],
  ['Rosario',['senecio rowleyanus','rosario','string of pearls','collana di perle'],'Curio rowleyanus','grassa',12,28,10,0,X1],
- ['Portulacaria',['portulacaria afra','albero degli elefanti','elephant bush'],'Portulacaria afra','grassa',12,28,5,0,null],
+ ['Portulacaria',['portulacaria afra','albero degli elefanti','elephant bush'],'Portulacaria afra','grassa',12,28,10,0,null],
  ['Aeonium',['aeonium','aeonium arboreum'],'Aeonium arboreum','grassa',10,21,5,0,null,{tipo:'Succulenta. Cresce in autunno-inverno-primavera, in estate riposa: annaffia poco.'}],
  ['Hoya',['hoya carnosa','fiore di cera','wax plant','hoya'],'Hoya carnosa','grassa',12,21,10,0,null,{luce:'Luce forte ma non diretta.',acqua:'Quando la terra è asciutta per metà vaso. Poca acqua in inverno.',terra:'Terriccio soffice con corteccia e perlite.',tipo:'Rampicante sempreverde. Non togliere gli steli dei fiori: rifiorisce sullo stesso punto.'}],
  ['Ceropegia',['ceropegia woodii','catena di cuori','string of hearts','cuori'],'Ceropegia woodii','grassa',14,28,10,0,null,{luce:'Luce forte ma non diretta.'}],
